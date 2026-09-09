@@ -1,0 +1,22 @@
+backend/.env
+.env.example
+backend/node_modules/
+package.json
+package-lock.json
+src/prisma/contract.prisma
+tsconfig.json
+src/prisma/contract.json
+src/prisma/contract.d.ts
+src/prisma/db.ts
+prisma.config.ts
+prisma-next.md
+src/prisma/contract.json linguist-generated
+src/prisma/contract.d.ts linguist-generated
+src/prisma/ops.json linguist-generated
+src/prisma/migration.json linguist-generated
+migrations/snapshots/**/contract.json linguist-generated
+migrations/snapshots/**/contract.d.ts linguist-generated
+.agents/
+.claude/
+.cursor/
+.devin/
