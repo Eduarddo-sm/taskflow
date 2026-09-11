@@ -1,4 +1,4 @@
-import { registerNewUser } from "../services/authService.js";
+import { registerNewUser, authenticateUser } from "../services/authService.js";
 
 export async function registerUser(req, res){
    
@@ -26,7 +26,7 @@ export async function registerUser(req, res){
     try {
 
         const user = await registerNewUser(userName, email, password);
-        return res.status(201).json(user);
+        return res.status(200).json(user);
 
     } catch(error){
         if(error.message === "O email registrado existe"){
@@ -37,5 +37,40 @@ export async function registerUser(req, res){
         return res.status(500).json({
             error: "Erro interno ao cadastrar o usuário"
         });
+    }
+}
+
+export async function loginUser(req, res){
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const { email, password } = req.body;
+
+    if(!email || !emailRegex.test(email.trim())) {
+        return res.status(400).json({
+            error: "Email inválido"
+        });
+    }
+
+    if (!password || password.trim() === ""){
+        return res.status(400).json({
+            error: "Senha inserida inválido"
+        })
+    }
+
+    try {
+
+        const response = await authenticateUser(email, password);      
+        return res.status(201).json(response);
+
+    } catch (error){
+        if(error.message === "email ou senha inválido"){
+            return res.status(401).json({
+                error: error.message
+            });
+        }
+
+        return res.status(500).json({
+            error: "erro na autenticação"
+        })
     }
 }
