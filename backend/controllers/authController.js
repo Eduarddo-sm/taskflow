@@ -60,7 +60,10 @@ export async function loginUser(req, res){
     try {
 
         const response = await authenticateUser(email, password);      
-        return res.status(201).json(response);
+        return res.status(201).json({
+            messa: 'Login successful',
+            token: response
+        });
 
     } catch (error){
         if(error.message === "email ou senha inválido"){

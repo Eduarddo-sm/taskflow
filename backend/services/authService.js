@@ -31,6 +31,7 @@ async function verifyUser(email, password = null) {
     return {
         id: user.userId,
         userName: user.userName,
+        role: 'user',
         success: true
     };
 
@@ -59,13 +60,13 @@ export async function registerNewUser(userName, email, password) {
 
 export async function authenticateUser(email, password) {
     const normalizedEmail = email.trim().toLowerCase();
-    const { id, userName, success } = await verifyUser(normalizedEmail, password);
+    const { id, userName, role, success } = await verifyUser(normalizedEmail, password);
 
     if (!success) {
         throw new Error("email ou senha inválido");
     }
 
-    const token = jwt.sign({ id, userName }, SECRET_KEY_JWT, { expiresIn: '1h' });
+    const token = jwt.sign({ id, userName, role }, SECRET_KEY_JWT, { expiresIn: '1h' });
     return {token};
 
 }
