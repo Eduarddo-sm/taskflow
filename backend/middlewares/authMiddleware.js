@@ -12,8 +12,7 @@ const authenticateToken = (req, res, next) => {
         });
     }
 
-    const token = authHeader && authHeader.split('')[1];
-
+    const token = authHeader.split(' ')[1];
     try {
         //Verificar o token utilizando a chave de acesso jwt
         const decoded = jwt.verify(token, process.env.KEY_JWT);
@@ -29,4 +28,4 @@ const authenticateToken = (req, res, next) => {
     }
 };
 
-export default authenticateToken;
+export {authenticateToken};
