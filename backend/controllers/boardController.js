@@ -1,5 +1,8 @@
 import { createNewBoard, getBoardsByUser, selectBoardById } from "../services/boardService.js";
 
+// --------------------------------------------------------------------------------------
+// CRUD BOARD:
+// LISTAR /// SELECIONAR /// CRIAR 
 export async function listBoards(req, res){
     const userId = req.user.id;
 
@@ -33,7 +36,7 @@ export async function selectBoard(req, res){
 
     } catch (error){
         if(error === "BOARD_ACCESS_DENIED"){
-            res.status(403).json("Você não possui acesso a esse board")
+           return res.status(403).json("Você não possui acesso a esse board")
         }
         res.status(500).json({
             error: "Erro ao buscar as informações do board solicitado"
@@ -65,8 +68,5 @@ export async function createBoard(req, res){
     }
 }
 
-export async function putBoard(req, res){
 
-}
 
-export async function deleteBoard(req, res){}
