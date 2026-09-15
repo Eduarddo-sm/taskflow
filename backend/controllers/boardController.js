@@ -1,4 +1,4 @@
-import { createNewBoard, getBoardsByUser } from "../services/boardService.js";
+import { createNewBoard, getBoardsByUser, selectBoardById } from "../services/boardService.js";
 
 export async function listBoards(req, res){
     const userId = req.user.id;
@@ -16,7 +16,8 @@ export async function listBoards(req, res){
 }
 
 export async function selectBoard(req, res){
-    const boardId = req.body.params;
+    const boardId = req.params.boardId;
+    const userId = req.user.id;
 
     if(!boardId || boardId.trim() === ""){
         return res.status(400).json({
@@ -26,13 +27,16 @@ export async function selectBoard(req, res){
 
     try {
 
-        const board = await selectBoardById(boardId);
+        const board = await selectBoardById(boardId, userId);
 
         return res.status(200).json(board);
 
     } catch (error){
+        if(error === "BOARD_ACCESS_DENIED"){
+            res.status(403).json("Você não possui acesso a esse board")
+        }
         res.status(500).json({
-            error: "Erro ao buscar as informações do do board solicitado"
+            error: "Erro ao buscar as informações do board solicitado"
         })
     }
 
