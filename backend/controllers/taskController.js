@@ -73,3 +73,60 @@ export async function createTask(req, res){
     }
 
 }
+
+export async function editTask(req, res){
+    const {title, description, priority, dueDate} = req.body;
+
+    const {taskId} = req.params;
+    const {responsibleId} = req.user.id;
+
+    const validationPriority = ["HIGH", "MEDIUM", "LOW"]
+    const [day, month, year] = dueDate.split("/");
+    const dueDateObject = new Date(
+        Number(year),
+        Number(month) - 1,
+        Number(day)
+    )
+
+    const tasksReceive = {title, description, priority, dueDateObject};
+
+    const tasksToUpdate = Object.fromEntries(
+        Object.entries(tasksReceive).filter(([_,valor]) => {
+            return valor !== undefined && valor !== null && valor !== "";
+        })
+    );
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+
+    if(!validationPriority.includes(priority)){
+        return res.status(400).json({
+            error: "Status inserido invalido"
+        });
+    }
+
+    if(Number.isNaN(dueDateObject.getDate()) || dueDateObject < today) {
+        return res.status(400).json({
+            error: "Data inserida invalida"
+        })
+    }
+
+
+
+    try {
+
+        const updatedTask = await updateTask(taskId, responsibleId, tasksToUpdate);
+
+        return res.status(201).json(updatedTask);
+
+    } catch(error) {
+        return res.status(500).json({
+            error: "Falha ao alterar informações", error
+        });
+    }
+
+
+
+
+}
