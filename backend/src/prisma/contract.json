@@ -334,7 +334,7 @@
               "createdAt": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/timestamptz-temporal@1",
+                  "codecId": "pg/timestamptz-string@1",
                   "kind": "scalar"
                 }
               },
@@ -348,7 +348,7 @@
               "dueDate": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/timestamptz-temporal@1",
+                  "codecId": "pg/timestamptz-string@1",
                   "kind": "scalar"
                 }
               },
@@ -396,7 +396,7 @@
               "updatedAt": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/timestamptz-temporal@1",
+                  "codecId": "pg/timestamptz-string@1",
                   "kind": "scalar"
                 }
               }
@@ -804,7 +804,7 @@
                   "nullable": false
                 },
                 "createdAt": {
-                  "codecId": "pg/timestamptz-temporal@1",
+                  "codecId": "pg/timestamptz-string@1",
                   "default": {
                     "expression": "now()",
                     "kind": "function"
@@ -818,7 +818,7 @@
                   "nullable": false
                 },
                 "dueDate": {
-                  "codecId": "pg/timestamptz-temporal@1",
+                  "codecId": "pg/timestamptz-string@1",
                   "nativeType": "timestamptz",
                   "nullable": false
                 },
@@ -858,7 +858,7 @@
                   "nullable": false
                 },
                 "updatedAt": {
-                  "codecId": "pg/timestamptz-temporal@1",
+                  "codecId": "pg/timestamptz-string@1",
                   "nativeType": "timestamptz",
                   "nullable": false
                 }
@@ -984,10 +984,10 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "9dc3868d3b81c720d85121dfc079763688a5ba96df9ee3259ef1e943add646ba"
+    "storageHash": "e39f1542d3d46af17349386f5201e649b5ad5a8923a4440e2f44e23b69bf4101"
   },
   "execution": {
-    "executionHash": "78a3249429c7b941a75c409beb4ede2ab173e1411dfdd0f8d3ae9cd080fbcee2",
+    "executionHash": "518bf9da78d8e8b946785a6e7dcee301535cbefe7ba2eb19aa43592ebb79abe9",
     "mutations": {
       "defaults": [
         {
@@ -1036,11 +1036,11 @@
         },
         {
           "onCreate": {
-            "id": "instantNow",
+            "id": "timestampNow",
             "kind": "generator"
           },
           "onUpdate": {
-            "id": "instantNow",
+            "id": "timestampNow",
             "kind": "generator"
           },
           "ref": {
