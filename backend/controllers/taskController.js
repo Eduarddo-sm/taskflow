@@ -1,4 +1,4 @@
-import { createNewTask, updateTask } from "../services/taskService.js";
+import { createNewTask, updateTask, removeTask } from "../services/taskService.js";
 
 
 export async function createTask(req, res){
@@ -152,23 +152,58 @@ export async function editTask(req, res){
     } catch(error) {
 
         if(error.message === "TASK_NOT_EXIST"){
-            return res.status(404).json(error);
+            return res.status(404).json({error: "Não foi possível editar"});
         }
 
         if(error.message === "COLUMN_NOT_EXIST"){
-            return res.status(404).json(error);
+            return res.status(404).json({error: "Não foi possível editar"});
         }
 
         if(error.message === "BOARD_ACCESS_DENIED"){
-            return res.status(403).json(error);
+            return res.status(403).json({error: "Não foi possível editar"});
         }
 
         if(error.message === "NOT_ALLOWED_EDIT"){
-            return res.status(403).json(error);
+            return res.status(403).json({error: "Não foi possível editar"});
         }
 
         return res.status(500).json({
-            error: "Falha ao alterar informações", error
+            error: "Falha ao alterar informações"
+        });
+    }
+
+}
+
+export async function deleteTask(req, res){
+    const { taskId } = req.params;
+    const userId = req.user.id;
+    
+    try {
+
+        const response = await removeTask(taskId, userId)
+
+        return res.status(200).json(response);
+
+    } catch (error) {
+
+        if(error.message === "TASK_NOT_EXIST"){
+            return res.status(404).json({error: "Tarefa não encontrada"});
+        }
+
+        if(error.message === "COLUMN_NOT_EXIST"){
+            return res.status(404).json({error: "Tarefa não encontrada"});
+        }
+
+        if(error.message === "BOARD_ACCESS_DENIED"){
+            return res.status(403).json({error: "Tarefa não encontrada"});
+        }
+
+        if(error.message === "NOT_ALLOWED_EDIT"){
+            return res.status(403).json({error: "Tarefa não encontrada"});
+        }
+
+        res.status(500).json({
+            error: "Falha ao deletar"
         });
     }
 
