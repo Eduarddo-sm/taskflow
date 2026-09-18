@@ -1,4 +1,4 @@
-import { createNewTask } from "../services/taskService.js";
+import { createNewTask, updateTask } from "../services/taskService.js";
 
 
 export async function createTask(req, res){
@@ -55,15 +55,15 @@ export async function createTask(req, res){
         return res.status(201).json(taskCreated);
 
     } catch (error) {
-        if(error === "COLUMN_NOT_EXIST"){
+        if(error.message === "COLUMN_NOT_EXIST"){
             return res.status(404).json(error);
         }
 
-        if(error === "BOARD_ACCESS_DENIED"){
+        if(error.message === "BOARD_ACCESS_DENIED"){
             return res.status(403).json(error);
         }
 
-        if(error === "LOT_ALLOED_EDIT"){
+        if(error.message === "LOT_ALLOED_EDIT"){
             return res.status(403).json(error);
         }
 
@@ -78,55 +78,98 @@ export async function editTask(req, res){
     const {title, description, priority, dueDate} = req.body;
 
     const {taskId} = req.params;
-    const {responsibleId} = req.user.id;
+    const userId = req.user.id;    
+    const validationPriority = ["HIGH", "MEDIUM", "LOW"];
+    const tasksToUpdate = {};
 
-    const validationPriority = ["HIGH", "MEDIUM", "LOW"]
-    const [day, month, year] = dueDate.split("/");
-    const dueDateObject = new Date(
-        Number(year),
-        Number(month) - 1,
-        Number(day)
-    )
+    if(title !== undefined){
+        if(!title || title.trim() === ""){
+            return res.status(400).json({
+                error: "Título inválido"
+            });
+        }
 
-    const tasksReceive = {title, description, priority, dueDateObject};
+        tasksToUpdate.title = title.trim();
+    }
 
-    const tasksToUpdate = Object.fromEntries(
-        Object.entries(tasksReceive).filter(([_,valor]) => {
-            return valor !== undefined && valor !== null && valor !== "";
-        })
-    );
+    if (description !== undefined) {
+        if (!description || description.trim() === "") {
+            return res.status(400).json({
+                error: "Descrição inválida"
+            });
+        }
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+        tasksToUpdate.description = description.trim();
+    }
 
+    if (priority !== undefined) {
+        if (!validationPriority.includes(priority)) {
+            return res.status(400).json({
+                error: "Prioridade inválida"
+            });
+        }
 
-    if(!validationPriority.includes(priority)){
+        tasksToUpdate.priority = priority;
+    }
+
+    if(dueDate !== undefined){
+        if(!dueDate || dueDate.trim() === ""){
+            return res.status(400).json({
+                error: "Data inválida"
+            });
+        }
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const [day, month, year] = dueDate.split("/");
+        const dueDateObject = new Date(
+            Number(year),
+            Number(month) - 1,
+            Number(day)
+        )
+
+        if(Number.isNaN(dueDateObject.getDate()) || dueDateObject < today) {
+            return res.status(400).json({
+                error: "Data inserida invalida"
+            });
+        }
+
+        tasksToUpdate.dueDate = dueDateObject.toISOString();
+
+    }
+
+    if(Object.keys(tasksToUpdate).length === 0){
         return res.status(400).json({
-            error: "Status inserido invalido"
+            error: "Nenum campo vído foi enviado para atualização"
         });
     }
 
-    if(Number.isNaN(dueDateObject.getDate()) || dueDateObject < today) {
-        return res.status(400).json({
-            error: "Data inserida invalida"
-        })
-    }
-
-
-
     try {
 
-        const updatedTask = await updateTask(taskId, responsibleId, tasksToUpdate);
-
-        return res.status(201).json(updatedTask);
+        const updatedTask = await updateTask(taskId, userId, tasksToUpdate);
+        return res.status(200).json(updatedTask);
 
     } catch(error) {
+
+        if(error.message === "TASK_NOT_EXIST"){
+            return res.status(404).json(error);
+        }
+
+        if(error.message === "COLUMN_NOT_EXIST"){
+            return res.status(404).json(error);
+        }
+
+        if(error.message === "BOARD_ACCESS_DENIED"){
+            return res.status(403).json(error);
+        }
+
+        if(error.message === "NOT_ALLOWED_EDIT"){
+            return res.status(403).json(error);
+        }
+
         return res.status(500).json({
             error: "Falha ao alterar informações", error
         });
     }
-
-
-
 
 }

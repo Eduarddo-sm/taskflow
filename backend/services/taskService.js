@@ -50,10 +50,7 @@ export async function createNewTask(columnId, title, responsibleId, description,
 
 }
 
-export async function updateTask(taskId, responsibleId, tasksToUpdate){
-
-    tasksToUpdate.dueDate = tasksToUpdate.dueDateObject;
-    delete tasksToUpdate.dueDateObject
+export async function updateTask(taskId, userId, tasksToUpdate){
 
     const task = await db.orm.public.Task
     .select("columnId")
@@ -64,10 +61,9 @@ export async function updateTask(taskId, responsibleId, tasksToUpdate){
         throw new Error("TASK_NOT_EXIST");
     }
 
-
     const column = await db.orm.public.Column
     .select("boardId")
-    .where({columnId: taskId.columnId})
+    .where({columnId: task.columnId})
     .first();
 
     if(!column){
@@ -76,7 +72,7 @@ export async function updateTask(taskId, responsibleId, tasksToUpdate){
 
     const member = await db.orm.public.BoardMember
     .select("permission")
-    .where({boardId: column.boardId, userId: responsibleId})
+    .where({boardId: column.boardId, userId})
     .first()
 
     if(!member) {
@@ -89,7 +85,7 @@ export async function updateTask(taskId, responsibleId, tasksToUpdate){
 
     const updatedTask = await db.orm.public.Task
         .where({taskId})
-        .update({tasksToUpdate});
+        .updateAll(tasksToUpdate);
 
     return updatedTask;
 
