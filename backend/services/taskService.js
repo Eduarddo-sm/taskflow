@@ -91,7 +91,7 @@ export async function updateTask(taskId, userId, tasksToUpdate){
 
 }
 
-
+// Falta implementar o recalculo de posições
 export async function removeTask(taskId, userId) {
 
     const task = await db.orm.public.Task
@@ -129,6 +129,20 @@ export async function removeTask(taskId, userId) {
     .where({taskId})
     .delete();
 
+    await reorderTasksInColumn(task.columnId);
+
     return removedTask;
+
+}
+
+
+async function reorderTasksInColumn(columnId){
+
+    const tasks = await db.orm.public.Task
+    .where({columnId})
+    .orderBy((task) => task.position.asc())
+    .all()
+
+    return tasks
 
 }

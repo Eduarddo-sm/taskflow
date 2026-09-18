@@ -66,7 +66,7 @@ export async function authenticateUser(email, password) {
         throw new Error("email ou senha inválido");
     }
 
-    const token = jwt.sign({ id, userName, role }, SECRET_KEY_JWT, { expiresIn: '1h' });
+    const token = jwt.sign({ id, userName, role }, SECRET_KEY_JWT, { expiresIn: '10d' });
     return {token};
 
 }
