@@ -56,15 +56,27 @@ export async function createTask(req, res){
 
     } catch (error) {
         if(error.message === "COLUMN_NOT_EXIST"){
-            return res.status(404).json(error);
+            return res.status(404).json({
+                error: "A coluna não existe"
+            });
+        }
+
+        if(error.message === "BOARD_NOT_EXIST"){
+            return res.status(404).json({
+                error: "O board não existe"
+            });
         }
 
         if(error.message === "BOARD_ACCESS_DENIED"){
-            return res.status(403).json(error);
+            return res.status(403).json({
+                error: "O board não existe"
+            });
         }
 
-        if(error.message === "LOT_ALLOED_EDIT"){
-            return res.status(403).json(error);
+        if(error.message === "NOT_ALLOWED_EDIT"){
+            return res.status(403).json({
+                error: "Você não tem permissão para editar"
+            });
         }
 
         return res.status(500).json({

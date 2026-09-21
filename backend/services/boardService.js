@@ -109,3 +109,66 @@ export async function updateBoardById(boardId, userId, boardName){
     return update;
 
 }
+
+export async function deleteSelectedBoard(boardId, userId){
+
+    const board = await db.orm.public.Board
+    .where({boardId})
+    .first();
+
+    if(!board){
+       throw new Error("NOT_FIND_BOARD");
+    }
+
+    const member = await db.orm.public.BoardMember
+    .select("permission")
+    .where({boardId, userId})
+    .first();
+
+    if(!member || member.permission !== "OWNER"){
+        throw new Error("NOT_ALLOWED_PERMISSION");
+    }
+
+
+
+    return await db.transaction(async (tx) => {
+
+        const board = await tx.orm.public.Board
+        .where({boardId, ownerId: userId})
+        .first();
+
+        const columns = await tx.orm.public.Column
+        .select("columnId")
+        .where({
+            boardId: board.boardId
+        })
+        .all();
+
+        //Transformar o objeto em uma lista
+        const columnIds = columns.map(col => col.columnId);
+        
+        if(columnIds.length > 0){
+
+            await tx.orm.public.Task
+            .where((task) => task.columnId.in(columnIds))
+            .deleteAll();
+
+            await tx.orm.public.Column
+            .where((column) => column.columnId.in(columnIds))
+            .deleteAll();
+
+        }
+
+        await tx.orm.public.BoardMember
+        .where({boardId: board.boardId})
+        .deleteAll()
+
+        const deletedBoard = await tx.orm.public.Board
+        .where({boardId: board.boardId})
+        .delete();
+
+        return deletedBoard;
+
+    })
+
+}

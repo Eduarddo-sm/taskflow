@@ -1,7 +1,7 @@
-import { createNewBoard, getBoardsByUser, selectBoardById, updateBoardById } from "../services/boardService.js";
+import { createNewBoard, getBoardsByUser, selectBoardById, updateBoardById, deleteSelectedBoard } from "../services/boardService.js";
 
 
-export async function listBoards(req, res){
+export async function listBoards(req, res) {
     const userId = req.user.id;
 
     try {
@@ -9,18 +9,18 @@ export async function listBoards(req, res){
         const boards = await getBoardsByUser(userId);
         return res.status(200).json(boards);
 
-    } catch(error){
+    } catch (error) {
         return res.status(500).json({
             error: "Erro ao buscar os boards"
         });
     }
 }
 
-export async function selectBoard(req, res){
+export async function selectBoard(req, res) {
     const boardId = req.params.boardId;
     const userId = req.user.id;
 
-    if(!boardId || boardId.trim() === ""){
+    if (!boardId || boardId.trim() === "") {
         return res.status(400).json({
             error: "O board solicitado não possui um código válido"
         });
@@ -32,9 +32,9 @@ export async function selectBoard(req, res){
 
         return res.status(200).json(board);
 
-    } catch (error){
-        if(error === "BOARD_ACCESS_DENIED"){
-           return res.status(403).json("Você não possui acesso a esse board")
+    } catch (error) {
+        if (error === "BOARD_ACCESS_DENIED") {
+            return res.status(403).json("Você não possui acesso a esse board")
         }
         res.status(500).json({
             error: "Erro ao buscar as informações do board solicitado"
@@ -43,14 +43,14 @@ export async function selectBoard(req, res){
 
 }
 
-export async function createBoard(req, res){
+export async function createBoard(req, res) {
 
     const { boardName } = req.body;
     const ownerId = req.user.id;
 
-    if(!boardName || boardName.trim() === ""){
+    if (!boardName || boardName.trim() === "") {
         return res.status(400).json(
-            {error: "Nome do board inválido"}
+            { error: "Nome do board inválido" }
         );
     }
 
@@ -61,22 +61,22 @@ export async function createBoard(req, res){
 
     } catch (error) {
         return res.status(500).json(
-            {error: "Falha ao criar o board: ", error}
+            { error: "Falha ao criar o board: ", error }
         )
     }
 }
 
-export async function updateBoard(req, res){
+export async function updateBoard(req, res) {
     const { boardName } = req.body;
-    const {boardId} = req.params
+    const { boardId } = req.params
     const userId = req.user.id;
 
-    if (!boardName || boardName.trim() === ""){
+    if (!boardName || boardName.trim() === "") {
         return res.status(400).json({
             error: "Nome do board inválido"
         });
     }
- 
+
     try {
 
         const updatedBoard = await updateBoardById(boardId, userId, boardName.trim())
@@ -85,13 +85,13 @@ export async function updateBoard(req, res){
 
     } catch (error) {
 
-        if(error.message === "BOARD_NOT_EXIST"){
+        if (error.message === "BOARD_NOT_EXIST") {
             return res.status(404).json({
                 error: "O board não existe"
             });
         }
 
-        if(error.message === "USER_NOT_ALLOWED"){
+        if (error.message === "USER_NOT_ALLOWED") {
             return res.status(403).json({
                 error: "Usuário sem permissão para acessar ou editar o board"
             });
@@ -100,6 +100,38 @@ export async function updateBoard(req, res){
         return res.status(500).json({
             message: "Erro ao atualizar o board"
         })
+    }
+
+}
+
+export async function deleteBoard(req, res) {
+
+    const { boardId } = req.params;
+    const userId = req.user.id;
+
+    try {
+
+        const deletedBoard = await deleteSelectedBoard(boardId, userId);
+
+        return res.status(200).json(deletedBoard)
+
+    } catch (error) {
+
+        if (error.message === "NOT_FIND_BOARD") {
+            return res.status(404).json({
+                error: "O Board não existe ou você não possui permissão para deletar"
+            })
+        }
+
+        if (error.message === "NOT_ALLOWED_PERMISSION") {
+            return res.status(403).json({
+                error: "O Board não existe ou você não possui permissão para deletar"
+            })
+        }
+
+        return res.status(500).json({
+            error: "Erro interno ao deletar board"
+        });
     }
 
 }

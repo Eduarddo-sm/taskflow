@@ -11,6 +11,15 @@ export async function createNewTask(columnId, title, responsibleId, description,
         throw new Error("COLUMN_NOT_EXIST");
     }
 
+    const board = await db.orm.public.Board
+    .select("boardId")
+    .where({boardId: column.boardId})
+    .first();
+
+    if(!board){
+        throw new Error("BOARD_NOT_EXIST");
+    }
+
     const member = await db.orm.public.BoardMember
     .select("permission")
     .where({boardId: column.boardId, userId: responsibleId})
