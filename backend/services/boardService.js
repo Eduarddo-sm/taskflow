@@ -1,10 +1,11 @@
+import { error } from 'console';
 import { db } from '../src/prisma/db.ts';
 
 
 
 export async function getBoardsByUser(userId){
 
-    const boards = db.orm.public.BoardMember
+    const boards = await db.orm.public.BoardMember
     .where({userId})
     .include("board")
     .all()
@@ -78,4 +79,33 @@ export async function selectBoardById(boardId, userId){
     .first();
 
     return board;
+}
+
+export async function updateBoardById(boardId, userId, boardName){
+    
+    const board = await db.orm.public.Board
+    .where({boardId})
+    .first()
+
+    if(!board) {
+        throw new Error("BOARD_NOT_EXIST");
+    }
+
+    const member = await db.orm.public.BoardMember
+    .select("permission")
+    .where({boardId, userId})
+    .first()
+
+    if(!member || member.permission !== "OWNER"){
+        throw new Error("USER_NOT_ALLOWED");
+    }
+
+    console.log(member.permission)
+
+    const update = await db.orm.public.Board
+    .where({boardId})
+    .update({boardName})
+
+    return update;
+
 }

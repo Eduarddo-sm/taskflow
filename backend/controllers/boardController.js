@@ -1,8 +1,6 @@
-import { createNewBoard, getBoardsByUser, selectBoardById } from "../services/boardService.js";
+import { createNewBoard, getBoardsByUser, selectBoardById, updateBoardById } from "../services/boardService.js";
 
-// --------------------------------------------------------------------------------------
-// CRUD BOARD:
-// LISTAR /// SELECIONAR /// CRIAR 
+
 export async function listBoards(req, res){
     const userId = req.user.id;
 
@@ -68,5 +66,42 @@ export async function createBoard(req, res){
     }
 }
 
+export async function updateBoard(req, res){
+    const { boardName } = req.body;
+    const {boardId} = req.params
+    const userId = req.user.id;
+
+    if (!boardName || boardName.trim() === ""){
+        return res.status(400).json({
+            error: "Nome do board inválido"
+        });
+    }
+ 
+    try {
+
+        const updatedBoard = await updateBoardById(boardId, userId, boardName.trim())
+
+        return res.status(200).json(updatedBoard);
+
+    } catch (error) {
+
+        if(error.message === "BOARD_NOT_EXIST"){
+            return res.status(404).json({
+                error: "O board não existe"
+            });
+        }
+
+        if(error.message === "USER_NOT_ALLOWED"){
+            return res.status(403).json({
+                error: "Usuário sem permissão para acessar ou editar o board"
+            });
+        }
+
+        return res.status(500).json({
+            message: "Erro ao atualizar o board"
+        })
+    }
+
+}
 
 
