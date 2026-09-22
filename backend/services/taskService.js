@@ -26,13 +26,13 @@ export async function createNewTask(columnId, title, responsibleId, description,
 
     const [day, month, year] = dueDate.split('/');
     const newDueDate = `${year}-${month}-${day}`;
-    const maxPosition = await db.orm.public.Task
+    const lastPosition = await db.orm.public.Task
     .select("position")
     .where({columnId})
     .orderBy((Task) => Task.position.desc())
     .first();
 
-    const newPosition = Number( maxPosition ? maxPosition.position + 1: 1); 
+    const newPosition = Number( lastPosition ? lastPosition.position + 1: 1); 
 
 
     const task = await db.orm.public.Task

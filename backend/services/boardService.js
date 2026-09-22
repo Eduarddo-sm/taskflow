@@ -1,4 +1,3 @@
-import { error } from 'console';
 import { db } from '../src/prisma/db.ts';
 
 
