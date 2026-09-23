@@ -3,7 +3,7 @@ import { db } from '../src/prisma/db.ts';
 
 export async function createNewColumn(columnName, boardId, userId){
 
-    const board = db.orm.public.Board
+    const board = await db.orm.public.Board
     .where({boardId})
     .first()
 
@@ -11,7 +11,7 @@ export async function createNewColumn(columnName, boardId, userId){
         throw new Error("NOT_FIND_BOARD")
     }
 
-    const member = db.orm.public.BoardMember
+    const member = await db.orm.public.BoardMember
     .where({boardId, userId})
     .first()
 
@@ -19,21 +19,21 @@ export async function createNewColumn(columnName, boardId, userId){
         throw new Error("USER_IS_NOT_A_MEMBER");
     }
 
-    if(!member.permission === "OWNER" || !member.permission === "EDITOR"){
+    if(!["OWNER", "EDITOR"].includes(member.permission)){
         throw new Error("USER_DO_NOT_HAVE_PERMISSION");
     }
 
-    const lastPosition = db.orm.public.Column
+    const lastPosition = await db.orm.public.Column
     .select("position")
     .where({boardId})
     .orderBy((p) => p.position.desc())
     .first();
 
-    const newPosition = Number(lastPosition ? lastPosition.position + 1: 1)
 
-    const columnCreated = db.orm.public.Column
-    .where({boardId})
-    .createAll({columnName, position: newPosition})
+    const newPosition = lastPosition ? lastPosition.position + 1: 1;
+  
+    const columnCreated = await db.orm.public.Column
+    .create({boardId, columnName, position: newPosition})
 
     return columnCreated;
 
