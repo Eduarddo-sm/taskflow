@@ -70,3 +70,44 @@ export async function updateColumnById(columnName, userId, columnId){
     return updatedColumn;
 
 }
+
+
+export async function deleteColumnById(columnId, userId){
+
+    const column = await db.orm.public.Column
+    .where({columnId})
+    .select("boardId")
+    .first();
+
+    if(!column){
+        throw new Error("COLUMN_NOT_EXIST");
+    }
+
+    const member = await db.orm.public.BoardMember
+    .where({boardId: column.boardId, userId})
+    .select("permission")
+    .first();
+
+    if(!member){
+        throw new Error("USER_IS_NOT_A_MEMBER")
+    }
+
+    if(!["OWNER", "EDITOR"].includes(member.permission)){
+        throw new Error("USER_DO_NOT_HAVE_PERMISSION");
+    }
+
+    const tasks = await db.orm.public.Task
+    .where({columnId})
+    .all();
+
+    if(tasks.length > 0){
+        throw new Error("COLUMN_HAVE_TASKS");
+    }
+
+    const deletedColumn = await db.orm.public.Column
+    .where({columnId})
+    .delete();
+
+    return deletedColumn;
+
+}
