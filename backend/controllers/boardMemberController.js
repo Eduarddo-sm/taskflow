@@ -1,4 +1,4 @@
-import {addMemberById} from "../services/boardMemberService.js";
+import { addMemberById, getBoardMembers} from "../services/boardMemberService.js";
 
 export async function addMember(req, res){
 
@@ -54,6 +54,26 @@ export async function addMember(req, res){
 
         return res.status(500).json({
             error: "Erro interno ao adicionar membro"
+        });
+    }
+
+}
+
+export async function listMembers(req, res){
+
+    const {boardId} = req.params
+    const userId = req.user.id;
+
+    try{
+
+        const membersList = await getBoardMembers(boardId, userId);
+
+        return res.status(200).json(membersList);
+
+    }catch(error){
+
+        return res.status(500).json({
+            error: "Erro interno ao buscar usuários"
         });
     }
 

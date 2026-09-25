@@ -44,5 +44,35 @@ export async function addMemberById(boardId, userToAddId, userId){
 
     return newMember
 
+}
+
+export async function getBoardMembers(boardId, userId){
+
+    const  board = await db.orm.public.Board
+    .where({boardId})
+    .first();
+
+    if(!board){
+        throw new Error("BOARD_NOT_EXIST");
+    }
+
+    const member = await db.orm.public.BoardMember
+    .where({userId, boardId})
+    .first()
+
+    if(!member){
+        throw new Error("USER_NOT_A_MEMBER");
+    }
+
+    const members = await db.orm.public.BoardMember
+    .where({boardId})
+    .select("userId", "permission")
+    .include("user", (user)=>
+        user
+            .select("userName", "email")
+    )
+    .all();
+
+    return members;
 
 }
