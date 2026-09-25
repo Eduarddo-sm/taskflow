@@ -1,4 +1,4 @@
-import { addMemberById, getBoardMembers} from "../services/boardMemberService.js";
+import { addMemberById, getBoardMembers, changePermissionById} from "../services/boardMemberService.js";
 
 export async function addMember(req, res){
 
@@ -76,5 +76,44 @@ export async function listMembers(req, res){
             error: "Erro interno ao buscar usuários"
         });
     }
+
+}
+
+export async function changeMemberPermission(req, res){
+
+    const {memberUserId} = req.params;
+    const {boardId} = req.params;
+    const {permission} = req.body;
+    const userId = req.user.id;
+
+
+    if(!permission || permission.trim() === ""){
+        return res.status(400).json({
+            error: "Permissão inválida"
+        });
+    }
+
+    if(!["OWNER", "EDITOR", "VIEWER"].includes(permission)){
+        return res.status(400).json({
+            error: "Permissão inválida"
+        });
+    }
+
+    try {
+
+        const userPermission = await changePermissionById(memberUserId, boardId, permission, userId)
+
+        return res.status(201).json(userPermission)
+
+    } catch(error){
+
+        console.log(error);
+
+        return res.status(500).json({
+            error: "erro interno ao alterar permissão"
+        })
+    }
+
+
 
 }
