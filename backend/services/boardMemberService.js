@@ -137,3 +137,50 @@ export async function changePermissionById(memberUserId, boardId, permission, us
 
 
 }
+
+export async function deleteUserFromBoardById(boardId, memberUserId, userId){
+
+
+    if(memberUserId === userId){
+        throw new Error("MEMBER_CANNOT_DELETE_YOURSELF");
+    }
+
+    const board = await db.orm.public.Board
+    .where({boardId})
+    .first();
+
+    if(!board){
+        throw new Error("BOARD_NOT_EXIST");
+    }
+
+    if (memberUserId === board.ownerId) {
+        throw new Error("CANNOT_REMOVE_BOARD_OWNER");
+    }
+
+    const member = await db.orm.public.BoardMember
+    .where({boardId, userId})
+    .first();
+
+    if(!member){
+        throw new Error("USER_NOT_A_MEMBER_FROM_THIS_BOARD");
+    }
+
+    if(member.permission !== "OWNER"){
+        throw new Error("USER_DO_NOT_HAVE_PERMISSION");
+    }
+
+    const memberToDelete  = await db.orm.public.BoardMember
+    .where({boardId, userId: memberUserId})
+    .first();
+
+    if(!memberToDelete ){
+        throw new Error("MEMBER_TARGET_IS_NOT_ON_BOARD");
+    }
+
+    const deletedMember = await db.orm.public.BoardMember
+    .where({boardId, userId: memberUserId})
+    .delete();
+
+    return deletedMember;
+
+}

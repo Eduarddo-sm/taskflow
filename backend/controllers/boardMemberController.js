@@ -1,4 +1,4 @@
-import { addMemberById, getBoardMembers, changePermissionById} from "../services/boardMemberService.js";
+import { addMemberById, getBoardMembers, changePermissionById, deleteUserFromBoardById} from "../services/boardMemberService.js";
 
 export async function addMember(req, res){
 
@@ -81,8 +81,7 @@ export async function listMembers(req, res){
 
 export async function changeMemberPermission(req, res){
 
-    const {memberUserId} = req.params;
-    const {boardId} = req.params;
+    const {memberUserId, boardId} = req.params;
     const {permission} = req.body;
     const userId = req.user.id;
 
@@ -158,4 +157,23 @@ export async function changeMemberPermission(req, res){
 
 
 
+}
+
+export async function deleteMember(req, user){
+
+    const { boardId, memberUserId } = req.params;
+    const userId = req.user.id;
+
+    try{
+
+        const deletedUser = await deleteUserFromBoardById(boardId, memberUserId, userId);
+
+        return res.status(200).json(deletedUser);
+
+    }catch(error){
+
+        return res.status(500).json({
+            error: "Erro interno ao deletar usuário"
+        });
+    }
 }
