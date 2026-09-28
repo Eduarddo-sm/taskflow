@@ -105,7 +105,7 @@ export async function changePermissionById(memberUserId, boardId, permission, us
     .first();
 
     if(!memberTarget){
-        throw new Error("MEMBER_NOT_EXIST");
+        throw new Error("TARGET_USER_NOT_EXIST");
     }
 
     const memberExistOnBoard = await db.orm.public.BoardMember
@@ -113,12 +113,21 @@ export async function changePermissionById(memberUserId, boardId, permission, us
     .first();
 
     if(!memberExistOnBoard){
-        throw new Error("USER_NOT_A_MEMBER_FROM_THIS_BOARD");
+        throw new Error("TARGET_USER_NOT_A_MEMBER_FROM_THIS_BOARD");
     }
 
     if(permission === memberExistOnBoard.permission){
         throw new Error(`USER_ALREADY_IS_${permission}`);
     }
+
+    if (!["EDITOR", "VIEWER"].includes(permission)) {
+        throw new Error("INVALID_PERMISSION");
+    }
+
+    if(memberExistOnBoard.userId === board.ownerId){
+        throw new Error("CANNOT_CHANGE_THIS_MEMBER_PERMISSION");
+    }
+
 
     const memberPermissionUpdated = await db.orm.public.BoardMember
     .where({boardId, userId: memberUserId})

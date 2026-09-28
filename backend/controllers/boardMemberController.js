@@ -93,7 +93,7 @@ export async function changeMemberPermission(req, res){
         });
     }
 
-    if(!["OWNER", "EDITOR", "VIEWER"].includes(permission)){
+    if(!["EDITOR", "VIEWER"].includes(permission)){
         return res.status(400).json({
             error: "Permissão inválida"
         });
@@ -103,9 +103,51 @@ export async function changeMemberPermission(req, res){
 
         const userPermission = await changePermissionById(memberUserId, boardId, permission, userId)
 
-        return res.status(201).json(userPermission)
+        return res.status(200).json(userPermission)
 
     } catch(error){
+
+        if(error.message === "BOARD_NOT_EXIST"){
+            return res.status(404).json({
+                error: "board não existe"
+            })
+        }
+
+        if(error.message === "USER_NOT_A_MEMBER"){
+            return res.status(403).json({
+                error: "Você não é membro deste Board"
+            });
+        }
+
+        if(error.message === "TARGET_USER_NOT_EXIST"){
+            return res.status(404).json({
+                error: "Usuário informado não existe"
+            })
+        }
+
+        if(error.message === "TARGET_USER_NOT_A_MEMBER_FROM_THIS_BOARD"){
+            return res.status(404).json({
+                error: "Usuário informado não faz parte do board"
+            });
+        }
+
+        if(error.message === `USER_ALREADY_IS_${permission}`){
+            return res.status(409).json({
+                error: "Usuário informado já possui esse nível de permissão"
+            });
+        }
+
+        if(error.message === "INVALID_PERMISSION"){
+            return res.status(403).json({
+                error: "Permissão de alteração inválida"
+            });
+        }
+
+        if(error.message === "CANNOT_CHANGE_THIS_MEMBER_PERMISSION"){
+            return res.status(403).json({
+                error: "Usuário informado não pode ser alterado o nível de permissão"
+            })
+        }
 
         console.log(error);
 
