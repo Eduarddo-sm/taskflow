@@ -24,12 +24,20 @@ export async function createNewTask(columnId, title, responsibleId, description,
         throw new Error("NOT_ALLOWED_EDIT");
     }
 
+    const userResponsibleExist = await db.orm.public.User
+    .where({userId: responsibleId})
+    .first();
+
+    if(!userResponsibleExist){
+        throw new Error("RESPONSIBLE_TARGET_NOT_EXIST")
+    }
+
     const userResponsible = await db.orm.public.BoardMember
     .where({boardId: column.boardId, userId: responsibleId})
     .first();
 
     if(!userResponsible){
-        throw new Error("RESPONSIBLE_TARGET_NOT_EXIST");
+        throw new Error("RESPONSIBLE_TARGET_NOT_EXIST_ON_BOARD");
     }
 
     const [day, month, year] = dueDate.split('/');

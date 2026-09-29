@@ -85,9 +85,15 @@ export async function createTask(req, res){
         }
 
         if(error.message === "RESPONSIBLE_TARGET_NOT_EXIST"){
-            return res.status(400).json({
-                error: "Responsável pela tarefa não faz parte do board"
-            })
+            return res.status(404).json({
+                error: "Responsável pela tarefa não existe"
+            });
+        }
+
+        if(error.message === "RESPONSIBLE_TARGET_NOT_EXIST_ON_BOARD"){
+            return res.status(404).json({
+                error: "Responsável pela tarefa não existe"
+            });
         }
 
         return res.status(500).json({
