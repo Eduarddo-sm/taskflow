@@ -141,9 +141,7 @@ export async function changePermissionById(memberUserId, boardId, permission, us
 export async function deleteUserFromBoardById(boardId, memberUserId, userId){
 
 
-    if(memberUserId === userId){
-        throw new Error("MEMBER_CANNOT_DELETE_YOURSELF");
-    }
+
 
     const board = await db.orm.public.Board
     .where({boardId})
@@ -152,6 +150,7 @@ export async function deleteUserFromBoardById(boardId, memberUserId, userId){
     if(!board){
         throw new Error("BOARD_NOT_EXIST");
     }
+
 
     if (memberUserId === board.ownerId) {
         throw new Error("CANNOT_REMOVE_BOARD_OWNER");
@@ -167,6 +166,10 @@ export async function deleteUserFromBoardById(boardId, memberUserId, userId){
 
     if(member.permission !== "OWNER"){
         throw new Error("USER_DO_NOT_HAVE_PERMISSION");
+    }
+
+    if(memberUserId === userId){
+        throw new Error("MEMBER_CANNOT_DELETE_YOURSELF");
     }
 
     const memberToDelete  = await db.orm.public.BoardMember

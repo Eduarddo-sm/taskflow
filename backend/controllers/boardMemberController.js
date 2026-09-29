@@ -159,21 +159,53 @@ export async function changeMemberPermission(req, res){
 
 }
 
-export async function deleteMember(req, user){
+export async function deleteMember(req, res){
 
     const { boardId, memberUserId } = req.params;
     const userId = req.user.id;
 
     try{
 
-        const deletedUser = await deleteUserFromBoardById(boardId, memberUserId, userId);
+        const deletedMember = await deleteUserFromBoardById(boardId, memberUserId, userId);
 
-        return res.status(200).json(deletedUser);
+        return res.status(200).json(deletedMember);
 
     }catch(error){
 
+        if(error.message === "MEMBER_CANNOT_DELETE_YOURSELF"){
+            return res.status(403).json({
+                error: "Acesso negado, você não pode se remover"
+            });
+        }
+
+        if(error.message === "BOARD_NOT_EXIST"){
+            return res.status(404).json({
+                error: "O board não existe"
+            })
+        }
+
+        if(error.message === 'CANNOT_REMOVE_BOARD_OWNER'){
+            return res.status(403).json({
+                error : "O proprietário do board não pode ser removido"
+            });
+        }
+
+        if(error.message === "USER_NOT_A_MEMBER_FROM_THIS_BOARD"){
+            return res.status(404).json({
+                error: "Usuário não faz parte desse board"
+            });
+        }
+
+        if(error.message === "USER_DO_NOT_HAVE_PERMISSION"){
+            return res.status(403).json({
+                error: "Usuário não tem permissão para remover membros"
+            })
+        }
+
+        console.error(error);
+
         return res.status(500).json({
-            error: "Erro interno ao deletar usuário"
+            error: "Erro interno ao remover membro"
         });
     }
 }
