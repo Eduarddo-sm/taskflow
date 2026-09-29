@@ -2,10 +2,9 @@ import { createNewTask, updateTask, removeTask } from "../services/taskService.j
 
 
 export async function createTask(req, res){
-    const { title, description, priority, dueDate } = req.body;
+    const { title, description, priority, dueDate, responsibleId } = req.body;
     const { columnId } = req.params;
-    const responsibleId = req.user.id;
-
+    const userId = req.user.id;
 
     const validPriorities = ["LOW", "MEDIUM", "HIGH"];
     const [day, month, year] = dueDate.split("/");
@@ -48,9 +47,15 @@ export async function createTask(req, res){
         });
     }
 
+    if(!responsibleId || responsibleId.trim() === ""){
+        return res.status(400).json({
+            error: "Responsável inválido"
+        });
+    }
+
     try {
 
-        const taskCreated = await createNewTask(columnId, title, responsibleId, description, priority, dueDate);
+        const taskCreated = await createNewTask(columnId, title, responsibleId, description, priority, dueDate, userId);
 
         return res.status(201).json(taskCreated);
 
@@ -77,6 +82,12 @@ export async function createTask(req, res){
             return res.status(403).json({
                 error: "Você não tem permissão para editar"
             });
+        }
+
+        if(error.message === "RESPONSIBLE_TARGET_NOT_EXIST"){
+            return res.status(400).json({
+                error: "Responsável pela tarefa não faz parte do board"
+            })
         }
 
         return res.status(500).json({

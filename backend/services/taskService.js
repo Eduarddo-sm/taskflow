@@ -1,6 +1,6 @@
 import { db } from '../src/prisma/db.ts';
 
-export async function createNewTask(columnId, title, responsibleId, description, priority, dueDate){
+export async function createNewTask(columnId, title, responsibleId, description, priority, dueDate, userId){
     
     const column = await db.orm.public.Column
     .select("boardId")
@@ -13,7 +13,7 @@ export async function createNewTask(columnId, title, responsibleId, description,
 
     const member = await db.orm.public.BoardMember
     .select("permission")
-    .where({boardId: column.boardId, userId: responsibleId})
+    .where({boardId: column.boardId, userId})
     .first()
 
     if(!member) {
@@ -22,6 +22,14 @@ export async function createNewTask(columnId, title, responsibleId, description,
 
     if (member.permission === "VIEWER") {
         throw new Error("NOT_ALLOWED_EDIT");
+    }
+
+    const userResponsible = await db.orm.public.BoardMember
+    .where({boardId: column.boardId, userId: responsibleId})
+    .first();
+
+    if(!userResponsible){
+        throw new Error("RESPONSIBLE_TARGET_NOT_EXIST");
     }
 
     const [day, month, year] = dueDate.split('/');
