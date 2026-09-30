@@ -174,3 +174,9 @@ async function reorderTasksInColumn(columnId){
     return tasks
 
 }
+
+async function  moveTaskById(taskId, userId, columnId, position) {
+    
+    
+
+}

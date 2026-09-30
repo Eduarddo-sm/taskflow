@@ -1,4 +1,4 @@
-import { createNewTask, updateTask, removeTask } from "../services/taskService.js";
+import { createNewTask, updateTask, removeTask, moveTaskById } from "../services/taskService.js";
 
 
 export async function createTask(req, res){
@@ -247,6 +247,40 @@ export async function deleteTask(req, res){
 
         res.status(500).json({
             error: "Falha ao deletar"
+        });
+    }
+
+}
+
+export async function moveTask(req, res){
+
+    const { columnId, position } = req.body;
+    const { taskId } = req.params;
+    const userId = req.user.id;
+
+    if(!columnId || columnId.trim() === ""){
+        return res.status(400).json({
+            error: "Coluna de destino inválida"
+        });
+    }
+
+    if(!Number.isInteger(position) || position < 1){
+        return res.status(400).json({
+            error: "Posição inválida"
+        });
+    }
+
+    try {
+
+        const movedTask = await moveTaskById(taskId, userId, columnId, position);
+
+        return res.status(200).json(movedTask)
+
+    } catch (error){
+
+
+        return res.status(500).json({
+            error: "erro interno ao mover tarefa"
         });
     }
 
