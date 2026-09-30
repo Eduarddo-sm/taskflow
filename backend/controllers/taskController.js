@@ -104,8 +104,7 @@ export async function createTask(req, res){
 }
 
 export async function editTask(req, res){
-    const {title, description, priority, dueDate} = req.body;
-
+    const {title, description, priority, dueDate, responsibleId} = req.body;
     const {taskId} = req.params;
     const userId = req.user.id;    
     const validationPriority = ["HIGH", "MEDIUM", "LOW"];
@@ -167,6 +166,15 @@ export async function editTask(req, res){
 
     }
 
+    if(responsibleId !== undefined){
+        if(!responsibleId || responsibleId.trim() === ""){
+        return res.status(400).json({
+            error: "Responsável inválido"
+        })
+    }
+        tasksToUpdate.responsibleId = responsibleId.trim()
+    }
+
     if(Object.keys(tasksToUpdate).length === 0){
         return res.status(400).json({
             error: "Nenum campo vído foi enviado para atualização"
@@ -194,6 +202,12 @@ export async function editTask(req, res){
 
         if(error.message === "NOT_ALLOWED_EDIT"){
             return res.status(403).json({error: "Não foi possível editar"});
+        }
+
+        if(error.message === "RESPONSIBLE_USER_NOT_EXIST_ON_BOARD"){
+            return res.status(404).json({
+                error: "Usuário responsável não faz parte desse board"
+            });
         }
 
         return res.status(500).json({

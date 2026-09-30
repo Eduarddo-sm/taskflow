@@ -99,6 +99,18 @@ export async function updateTask(taskId, userId, tasksToUpdate){
         throw new Error("NOT_ALLOWED_EDIT");
     }
 
+    if(tasksToUpdate.responsibleId){
+       
+        const responsibleExist = await db.orm.public.BoardMember
+        .where({boardId: column.boardId, userId: tasksToUpdate.responsibleId})
+        .first();
+
+        if(!responsibleExist){
+            throw new Error("RESPONSIBLE_USER_NOT_EXIST_ON_BOARD");
+        }
+
+    }
+
     const updatedTask = await db.orm.public.Task
         .where({taskId})
         .updateAll(tasksToUpdate);
