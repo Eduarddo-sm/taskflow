@@ -278,6 +278,47 @@ export async function moveTask(req, res){
 
     } catch (error){
 
+        if(error.message === "TASK_NOT_EXIST"){
+            return res.status(404).json({
+                error: "Tarefa não existe"
+            })
+        }
+
+        if(error.message === "BOARD_NOT_EXIST"){
+            return res.status(404).json({
+                error: "Board não encontrado"
+            })
+        }
+
+        if(error.message === "USER_NOT_EXIST_IN_BOARD"){
+            return res.status(403).json({
+                error: "Usuário não encontrado no board"
+            })
+        }
+
+        if(error.message === "USER_NOT_ALLOWED"){
+            return res.status(403).json({
+                error: "Usuário sem permissão"
+            })
+        }
+
+        if(error.message === "DESTINATION_COLUMN_NOT_EXIST"){
+            return res.status(404).json({
+                error: "Coluna destino não existe"
+            })
+        }
+
+        if(error.message === "BOARD_DIFFER"){
+            return res.status(403).json({
+                error: "A coluna de destino pertence a outro board"
+            });
+        }
+
+        if(error.message === "INVALID_POSITION"){
+            return res.status(400).json({
+                error: "Posição não existe"
+            });
+        }
 
         return res.status(500).json({
             error: "erro interno ao mover tarefa"
