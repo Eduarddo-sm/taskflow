@@ -1,4 +1,5 @@
 import express from "express";
+import cors from "cors";
 import authRoutes from "./routers/authRoutes.js";
 import boardRoutes from "./routers/boardRoutes.js";
 import taskRoutes from "./routers/taskRoutes.js";
@@ -8,6 +9,11 @@ import boardMemberRoutes from "./routers/boardMemberRoutes.js";
 const app = express();
 
 app.use(express.json());
+app.use(cors({
+    origin: 'http://localhost:5173',
+    credentials: true
+}));
+
 
 app.use("/api/auth", authRoutes);
 app.use("/api/boards", boardRoutes);
