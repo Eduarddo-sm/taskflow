@@ -1,6 +1,6 @@
 import { useState } from "react";
 import "./LoginPage.css";
-import DashboardPage from "./DashboardPage.jsx";
+import BoardsPage from "./BoardsPage.jsx";
 
 function LoginForm({ onLogin, mensagem }) {
   const [email, setEmail] = useState("");
@@ -68,8 +68,7 @@ function LoginPage() {
       }
 
       const dados = await response.json();
-
-      setToken(dados.token);
+      setToken(dados.response.token);
       setLogado(true);
       setMensagem("Login com sucesso");
     } catch (error) {
@@ -81,7 +80,7 @@ function LoginPage() {
   return (
     <>
       {logado ? (
-        <DashboardPage />
+        <BoardsPage token={token} />
       ) : (
         <LoginForm onLogin={handleLogin} mensagem={mensagem} />
       )}

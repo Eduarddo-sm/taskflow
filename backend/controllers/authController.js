@@ -61,8 +61,8 @@ export async function loginUser(req, res){
 
         const response = await authenticateUser(email, password);      
         return res.status(201).json({
-            messa: 'Login successful',
-            token: response
+            message: 'Login successful',
+            response: response
         });
 
     } catch (error){
