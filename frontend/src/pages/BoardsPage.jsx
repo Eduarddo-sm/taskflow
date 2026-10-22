@@ -30,12 +30,15 @@ function BoardsPage({ token }) {
     buscarBoards();
   }, [token]);
 
+  function handleVoltar(){
+    setBoardSelecionado(null)
+  }
   
 
   return (
     <>
       {boardSelecionado ? (
-        <BoardPage boardId={boardSelecionado} token={token} onVoltar={setBoardSelecionado} />
+        <BoardPage boardId={boardSelecionado} token={token} onVoltar={handleVoltar} />
       ) : (
         <>
           <h1>Bem vindo</h1>

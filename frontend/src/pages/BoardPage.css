@@ -1,0 +1,30 @@
+
+
+.boardColumns {
+    min-height: 500px;
+    display: flex;
+    justify-content: space-around;
+    gap: 25px;
+    background-color: #87CEEB;
+    padding: 15px 5px;
+    margin: 0 25px;
+    border-radius: 15px;
+    box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.5);
+    overflow: auto;
+}
+
+.column {
+    min-width: 200px;
+    background-color: #000080;
+    border: 10px solid green;
+    border-radius: 3px;
+}
+
+.column>p {
+    text-align: center;
+    background-color: yellow;
+    color: rgb(0, 0, 0);
+    margin: 0;
+
+}
+
