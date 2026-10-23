@@ -1,328 +1,346 @@
-import { createNewTask, updateTask, removeTask, moveTaskById } from "../services/taskService.js";
+import {
+  createNewTask,
+  updateTask,
+  removeTask,
+  moveTaskById,
+} from "../services/taskService.js";
 
+export async function createTask(req, res) {
+  const { title, description, priority, dueDate, responsibleId } = req.body;
+  const { columnId } = req.params;
+  const userId = req.user.id;
+  const taskToCreate = {};
 
-export async function createTask(req, res){
-    const { title, description, priority, dueDate, responsibleId } = req.body;
-    const { columnId } = req.params;
-    const userId = req.user.id;
+  const validPriorities = ["LOW", "MEDIUM", "HIGH"];
 
-    const validPriorities = ["LOW", "MEDIUM", "HIGH"];
-    const [day, month, year] = dueDate.split("/");
-    const dueDateObject = new Date(
-        Number(year),
-        Number(month) - 1,
-        Number(day)
-    );
+  if (!title || title.trim() === "") {
+    return res.status(400).json({
+      error: "Titulo inserido inválido",
+    });
+  }
+
+  taskToCreate.title = title.trim();
+
+  if (description !== undefined) {
+    if (!description || description.trim() === "") {
+      return res.status(400).json({
+        error: "Descrição inserida inválido",
+      });
+    }
+
+    taskToCreate.description = description.trim();
+  }
+
+  if (!validPriorities.includes(priority)) {
+    return res.status(400).json({
+      error: "Nível de prioridade inválido",
+    });
+  }
+
+  taskToCreate.priority = priority.trim();
+
+  if (dueDate !== undefined) {
+    if (!dueDate || dueDate.trim() === "") {
+      return res.statuts(400).json({
+        error: "Data inserida inválida",
+      });
+    }
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    if (!title || title.trim() === ""){
-        return res.status(400).json({
-            error: "Titulo inserido inválido"
-        });
+    const [day, month, year] = dueDate.split("/");
+    const dueDateObject = new Date(
+      Number(year),
+      Number(month) - 1,
+      Number(day),
+    );
+
+    if (Number.isNaN(dueDateObject.getTime()) || dueDateObject < today) {
+      return res.status(400).json({
+        error: "Data prazo inválida",
+      });
     }
 
-    if (!description || description.trim() === ""){
-        return res.status(400).json({
-            error: "Descrição inserida inválido"
-        });
+    taskToCreate.dueDate = dueDateObject.toISOString();
+
     }
 
-    if(!validPriorities.includes(priority)) {
-        return res.status(400).json({
-            error: "Nível de prioridade inválido"
-        });
+  if (responsibleId !== undefined) {
+    if (!responsibleId || responsibleId.trim() === "") {
+      return res.status(400).json({
+        error: "Responsável inválido",
+      });
     }
 
-    if(!dueDate || dueDate.trim() === ""){
-        return res.statuts(400).json({
-            error: "Data inserida inválida"
-        });
+    taskToCreate.responsibleId = responsibleId;
+  }
+
+  if (responsibleId === undefined) {
+    taskToCreate.responsibleId = userId;
+  }
+
+    taskToCreate.columnId = columnId;
+
+  if (Object.keys(taskToCreate).length === 0) {
+    throw new Error("INVALIDO SOLICITAÇÃO");
+  }
+
+  try {
+    const taskCreated = await createNewTask(columnId, userId, taskToCreate);
+
+    return res.status(201).json(taskCreated);
+  } catch (error) {
+    if (error.message === "COLUMN_NOT_EXIST") {
+      return res.status(404).json({
+        error: "A coluna não existe",
+      });
     }
 
-    if(Number.isNaN(dueDateObject.getTime()) || dueDateObject < today){
-        return res.status(400).json({
-            error: "Data prazo inválida"
-        });
+    if (error.message === "BOARD_NOT_EXIST") {
+      return res.status(404).json({
+        error: "O board não existe",
+      });
     }
 
-    if(!responsibleId || responsibleId.trim() === ""){
-        return res.status(400).json({
-            error: "Responsável inválido"
-        });
+    if (error.message === "BOARD_ACCESS_DENIED") {
+      return res.status(403).json({
+        error: "O board não existe",
+      });
     }
 
-    try {
-
-        const taskCreated = await createNewTask(columnId, title, responsibleId, description, priority, dueDate, userId);
-
-        return res.status(201).json(taskCreated);
-
-    } catch (error) {
-        if(error.message === "COLUMN_NOT_EXIST"){
-            return res.status(404).json({
-                error: "A coluna não existe"
-            });
-        }
-
-        if(error.message === "BOARD_NOT_EXIST"){
-            return res.status(404).json({
-                error: "O board não existe"
-            });
-        }
-
-        if(error.message === "BOARD_ACCESS_DENIED"){
-            return res.status(403).json({
-                error: "O board não existe"
-            });
-        }
-
-        if(error.message === "NOT_ALLOWED_EDIT"){
-            return res.status(403).json({
-                error: "Você não tem permissão para editar"
-            });
-        }
-
-        if(error.message === "RESPONSIBLE_TARGET_NOT_EXIST"){
-            return res.status(404).json({
-                error: "Responsável pela tarefa não existe"
-            });
-        }
-
-        if(error.message === "RESPONSIBLE_TARGET_NOT_EXIST_ON_BOARD"){
-            return res.status(404).json({
-                error: "Responsável pela tarefa não existe"
-            });
-        }
-
-        return res.status(500).json({
-            error: "Erro ao cadastrar tarefa"
-        });
+    if (error.message === "NOT_ALLOWED_EDIT") {
+      return res.status(403).json({
+        error: "Você não tem permissão para editar",
+      });
     }
 
+    if (error.message === "RESPONSIBLE_TARGET_NOT_EXIST") {
+      return res.status(404).json({
+        error: "Responsável pela tarefa não existe",
+      });
+    }
+
+    if (error.message === "RESPONSIBLE_TARGET_NOT_EXIST_ON_BOARD") {
+      return res.status(404).json({
+        error: "Responsável pela tarefa não existe",
+      });
+    }
+
+    console.log(error)
+
+    return res.status(500).json({
+      error: "Erro ao cadastrar tarefa",
+    });
+  }
 }
 
-export async function editTask(req, res){
-    const {title, description, priority, dueDate, responsibleId} = req.body;
-    const {taskId} = req.params;
-    const userId = req.user.id;    
-    const validationPriority = ["HIGH", "MEDIUM", "LOW"];
-    const tasksToUpdate = {};
+export async function editTask(req, res) {
+  const { title, description, priority, dueDate, responsibleId } = req.body;
+  const { taskId } = req.params;
+  const userId = req.user.id;
+  const validationPriority = ["HIGH", "MEDIUM", "LOW"];
+  const tasksToUpdate = {};
 
-    if(title !== undefined){
-        if(!title || title.trim() === ""){
-            return res.status(400).json({
-                error: "Título inválido"
-            });
-        }
-
-        tasksToUpdate.title = title.trim();
+  if (title !== undefined) {
+    if (!title || title.trim() === "") {
+      return res.status(400).json({
+        error: "Título inválido",
+      });
     }
 
-    if (description !== undefined) {
-        if (!description || description.trim() === "") {
-            return res.status(400).json({
-                error: "Descrição inválida"
-            });
-        }
+    tasksToUpdate.title = title.trim();
+  }
 
-        tasksToUpdate.description = description.trim();
+  if (description !== undefined) {
+    if (!description || description.trim() === "") {
+      return res.status(400).json({
+        error: "Descrição inválida",
+      });
     }
 
-    if (priority !== undefined) {
-        if (!validationPriority.includes(priority)) {
-            return res.status(400).json({
-                error: "Prioridade inválida"
-            });
-        }
+    tasksToUpdate.description = description.trim();
+  }
 
-        tasksToUpdate.priority = priority;
+  if (priority !== undefined) {
+    if (!validationPriority.includes(priority)) {
+      return res.status(400).json({
+        error: "Prioridade inválida",
+      });
     }
 
-    if(dueDate !== undefined){
-        if(!dueDate || dueDate.trim() === ""){
-            return res.status(400).json({
-                error: "Data inválida"
-            });
-        }
+    tasksToUpdate.priority = priority;
+  }
 
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const [day, month, year] = dueDate.split("/");
-        const dueDateObject = new Date(
-            Number(year),
-            Number(month) - 1,
-            Number(day)
-        )
-
-        if(Number.isNaN(dueDateObject.getDate()) || dueDateObject < today) {
-            return res.status(400).json({
-                error: "Data inserida invalida"
-            });
-        }
-
-        tasksToUpdate.dueDate = dueDateObject.toISOString();
-
+  if (dueDate !== undefined) {
+    if (!dueDate || dueDate.trim() === "") {
+      return res.status(400).json({
+        error: "Data inválida",
+      });
     }
 
-    if(responsibleId !== undefined){
-        if(!responsibleId || responsibleId.trim() === ""){
-        return res.status(400).json({
-            error: "Responsável inválido"
-        })
-    }
-        tasksToUpdate.responsibleId = responsibleId.trim()
-    }
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const [day, month, year] = dueDate.split("/");
+    const dueDateObject = new Date(
+      Number(year),
+      Number(month) - 1,
+      Number(day),
+    );
 
-    if(Object.keys(tasksToUpdate).length === 0){
-        return res.status(400).json({
-            error: "Nenum campo vído foi enviado para atualização"
-        });
-    }
-
-    try {
-
-        const updatedTask = await updateTask(taskId, userId, tasksToUpdate);
-        return res.status(200).json(updatedTask);
-
-    } catch(error) {
-
-        if(error.message === "TASK_NOT_EXIST"){
-            return res.status(404).json({error: "Não foi possível editar"});
-        }
-
-        if(error.message === "COLUMN_NOT_EXIST"){
-            return res.status(404).json({error: "Não foi possível editar"});
-        }
-
-        if(error.message === "BOARD_ACCESS_DENIED"){
-            return res.status(403).json({error: "Não foi possível editar"});
-        }
-
-        if(error.message === "NOT_ALLOWED_EDIT"){
-            return res.status(403).json({error: "Não foi possível editar"});
-        }
-
-        if(error.message === "RESPONSIBLE_USER_NOT_EXIST_ON_BOARD"){
-            return res.status(404).json({
-                error: "Usuário responsável não faz parte desse board"
-            });
-        }
-
-        return res.status(500).json({
-            error: "Falha ao alterar informações"
-        });
+    if (Number.isNaN(dueDateObject.getDate()) || dueDateObject < today) {
+      return res.status(400).json({
+        error: "Data inserida invalida",
+      });
     }
 
+    tasksToUpdate.dueDate = dueDateObject.toISOString();
+  }
+
+  if (responsibleId !== undefined) {
+    if (!responsibleId || responsibleId.trim() === "") {
+      return res.status(400).json({
+        error: "Responsável inválido",
+      });
+    }
+    tasksToUpdate.responsibleId = responsibleId.trim();
+  }
+
+  if (Object.keys(tasksToUpdate).length === 0) {
+    return res.status(400).json({
+      error: "Nenum campo vído foi enviado para atualização",
+    });
+  }
+
+  try {
+    const updatedTask = await updateTask(taskId, userId, tasksToUpdate);
+    return res.status(200).json(updatedTask);
+  } catch (error) {
+    if (error.message === "TASK_NOT_EXIST") {
+      return res.status(404).json({ error: "Não foi possível editar" });
+    }
+
+    if (error.message === "COLUMN_NOT_EXIST") {
+      return res.status(404).json({ error: "Não foi possível editar" });
+    }
+
+    if (error.message === "BOARD_ACCESS_DENIED") {
+      return res.status(403).json({ error: "Não foi possível editar" });
+    }
+
+    if (error.message === "NOT_ALLOWED_EDIT") {
+      return res.status(403).json({ error: "Não foi possível editar" });
+    }
+
+    if (error.message === "RESPONSIBLE_USER_NOT_EXIST_ON_BOARD") {
+      return res.status(404).json({
+        error: "Usuário responsável não faz parte desse board",
+      });
+    }
+
+    return res.status(500).json({
+      error: "Falha ao alterar informações",
+    });
+  }
 }
 
-export async function deleteTask(req, res){
-    const { taskId } = req.params;
-    const userId = req.user.id;
-    
-    try {
+export async function deleteTask(req, res) {
+  const { taskId } = req.params;
+  const userId = req.user.id;
 
-        const response = await removeTask(taskId, userId)
+  try {
+    const response = await removeTask(taskId, userId);
 
-        return res.status(200).json(response);
-
-    } catch (error) {
-
-        if(error.message === "TASK_NOT_EXIST"){
-            return res.status(404).json({error: "Tarefa não encontrada"});
-        }
-
-        if(error.message === "COLUMN_NOT_EXIST"){
-            return res.status(404).json({error: "Tarefa não encontrada"});
-        }
-
-        if(error.message === "BOARD_ACCESS_DENIED"){
-            return res.status(403).json({error: "Tarefa não encontrada"});
-        }
-
-        if(error.message === "NOT_ALLOWED_EDIT"){
-            return res.status(403).json({error: "Tarefa não encontrada"});
-        }
-
-        res.status(500).json({
-            error: "Falha ao deletar"
-        });
+    return res.status(200).json(response);
+  } catch (error) {
+    if (error.message === "TASK_NOT_EXIST") {
+      return res.status(404).json({ error: "Tarefa não encontrada" });
     }
 
+    if (error.message === "COLUMN_NOT_EXIST") {
+      return res.status(404).json({ error: "Tarefa não encontrada" });
+    }
+
+    if (error.message === "BOARD_ACCESS_DENIED") {
+      return res.status(403).json({ error: "Tarefa não encontrada" });
+    }
+
+    if (error.message === "NOT_ALLOWED_EDIT") {
+      return res.status(403).json({ error: "Tarefa não encontrada" });
+    }
+
+    res.status(500).json({
+      error: "Falha ao deletar",
+    });
+  }
 }
 
-export async function moveTask(req, res){
+export async function moveTask(req, res) {
+  const { columnId, position } = req.body;
+  const { taskId } = req.params;
+  const userId = req.user.id;
 
-    const { columnId, position } = req.body;
-    const { taskId } = req.params;
-    const userId = req.user.id;
+  if (!columnId || columnId.trim() === "") {
+    return res.status(400).json({
+      error: "Coluna de destino inválida",
+    });
+  }
 
-    if(!columnId || columnId.trim() === ""){
-        return res.status(400).json({
-            error: "Coluna de destino inválida"
-        });
+  if (!Number.isInteger(position) || position < 1) {
+    return res.status(400).json({
+      error: "Posição inválida",
+    });
+  }
+
+  try {
+    const movedTask = await moveTaskById(taskId, userId, columnId, position);
+
+    return res.status(200).json(movedTask);
+  } catch (error) {
+    if (error.message === "TASK_NOT_EXIST") {
+      return res.status(404).json({
+        error: "Tarefa não existe",
+      });
     }
 
-    if(!Number.isInteger(position) || position < 1){
-        return res.status(400).json({
-            error: "Posição inválida"
-        });
+    if (error.message === "BOARD_NOT_EXIST") {
+      return res.status(404).json({
+        error: "Board não encontrado",
+      });
     }
 
-    try {
-
-        const movedTask = await moveTaskById(taskId, userId, columnId, position);
-
-        return res.status(200).json(movedTask)
-
-    } catch (error){
-
-        if(error.message === "TASK_NOT_EXIST"){
-            return res.status(404).json({
-                error: "Tarefa não existe"
-            })
-        }
-
-        if(error.message === "BOARD_NOT_EXIST"){
-            return res.status(404).json({
-                error: "Board não encontrado"
-            })
-        }
-
-        if(error.message === "USER_NOT_EXIST_IN_BOARD"){
-            return res.status(403).json({
-                error: "Usuário não encontrado no board"
-            })
-        }
-
-        if(error.message === "USER_NOT_ALLOWED"){
-            return res.status(403).json({
-                error: "Usuário sem permissão"
-            })
-        }
-
-        if(error.message === "DESTINATION_COLUMN_NOT_EXIST"){
-            return res.status(404).json({
-                error: "Coluna destino não existe"
-            })
-        }
-
-        if(error.message === "BOARD_DIFFER"){
-            return res.status(403).json({
-                error: "A coluna de destino pertence a outro board"
-            });
-        }
-
-        if(error.message === "INVALID_POSITION"){
-            return res.status(400).json({
-                error: "Posição não existe"
-            });
-        }
-
-        return res.status(500).json({
-            error: "erro interno ao mover tarefa"
-        });
+    if (error.message === "USER_NOT_EXIST_IN_BOARD") {
+      return res.status(403).json({
+        error: "Usuário não encontrado no board",
+      });
     }
 
+    if (error.message === "USER_NOT_ALLOWED") {
+      return res.status(403).json({
+        error: "Usuário sem permissão",
+      });
+    }
+
+    if (error.message === "DESTINATION_COLUMN_NOT_EXIST") {
+      return res.status(404).json({
+        error: "Coluna destino não existe",
+      });
+    }
+
+    if (error.message === "BOARD_DIFFER") {
+      return res.status(403).json({
+        error: "A coluna de destino pertence a outro board",
+      });
+    }
+
+    if (error.message === "INVALID_POSITION") {
+      return res.status(400).json({
+        error: "Posição não existe",
+      });
+    }
+
+    return res.status(500).json({
+      error: "erro interno ao mover tarefa",
+    });
+  }
 }

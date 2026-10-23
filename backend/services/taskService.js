@@ -1,15 +1,9 @@
 import { db } from "../src/prisma/db.ts";
 
-export async function createNewTask(
-  columnId,
-  title,
-  responsibleId,
-  description,
-  priority,
-  dueDate,
-  userId,
-) {
-  const column = await db.orm.public.Column.select("boardId")
+export async function createNewTask(columnId, userId, taskToCreate) {
+
+  const column = await db.orm.public.Column
+    .select("boardId")
     .where({ columnId })
     .first();
 
@@ -30,7 +24,7 @@ export async function createNewTask(
   }
 
   const userResponsibleExist = await db.orm.public.User.where({
-    userId: responsibleId,
+    userId: taskToCreate.responsibleId,
   }).first();
 
   if (!userResponsibleExist) {
@@ -39,15 +33,19 @@ export async function createNewTask(
 
   const userResponsible = await db.orm.public.BoardMember.where({
     boardId: column.boardId,
-    userId: responsibleId,
+    userId: taskToCreate.responsibleId,
   }).first();
 
   if (!userResponsible) {
     throw new Error("RESPONSIBLE_TARGET_NOT_EXIST_ON_BOARD");
   }
 
-  const [day, month, year] = dueDate.split("/");
-  const newDueDate = `${year}-${month}-${day}`;
+  // const [day, month, year] = taskToCreate.dueDate.split("-");
+  // const newDueDate = `${year}-${month}-${day}`;
+  // console.log(`newDueDate service: ${newDueDate}`)
+  // taskToCreate.dueDate = newDueDate;
+  // console.log(taskToCreate.dueDate)
+
   const lastPosition = await db.orm.public.Task.select("position")
     .where({ columnId })
     .orderBy((Task) => Task.position.desc())
@@ -55,15 +53,9 @@ export async function createNewTask(
 
   const newPosition = Number(lastPosition ? lastPosition.position + 1 : 1);
 
-  const task = await db.orm.public.Task.create({
-    columnId,
-    title,
-    responsibleId,
-    description,
-    priority,
-    position: newPosition,
-    dueDate: newDueDate,
-  });
+  taskToCreate.position = newPosition
+
+  const task = await db.orm.public.Task.create(taskToCreate);
 
   return task;
 }
@@ -263,7 +255,6 @@ export async function moveTaskById(taskId, userId, columnId, position) {
         await tx.orm.public.Task.where({
           taskId: oldColumnTasks[i].taskId,
         }).update({ position: i + 1 });
-
       }
 
       const newColumnTasks = await tx.orm.public.Task.where({
@@ -289,7 +280,9 @@ export async function moveTaskById(taskId, userId, columnId, position) {
           taskId: newColumnTasks[i].taskId,
         }).update({ position: i + 1 });
 
-        console.log(`${newColumnTasks[i].title}, ${newColumnTasks[i].position}`);
+        console.log(
+          `${newColumnTasks[i].title}, ${newColumnTasks[i].position}`,
+        );
       }
 
       taskToMove.columnId = destinationColumn.columnId;
