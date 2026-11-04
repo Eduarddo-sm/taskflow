@@ -49,7 +49,11 @@ export async function createTask(req, res) {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const [day, month, year] = dueDate.split("/");
+    console.log(dueDate.includes("-"))
+
+    //const [day, month, year] = dueDate.split("/");
+   //const [day, month, year] = dueDate.includes("-") ? dueDate.split("-") : dueDate.split("/")
+    const [year, month, day] = dueDate.split("-");
     const dueDateObject = new Date(
       Number(year),
       Number(month) - 1,
