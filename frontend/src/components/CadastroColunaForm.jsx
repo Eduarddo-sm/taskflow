@@ -19,7 +19,7 @@ function CadastroColunaForm({ boardId, token, formularioState, onColunaCriada })
           method: "POST",
           headers: {
             Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
+            "content-type": "application/json",
           },
           body: JSON.stringify({ columnName }),
         },
@@ -31,7 +31,7 @@ function CadastroColunaForm({ boardId, token, formularioState, onColunaCriada })
 
       colunaCriada = true;
 
-      const atualizado = await onColunaCriada();
+      const atualizado = await onColunaCriada(false);
 
       if(!atualizado){
         throw new Error("não foi possível atualizar a lista")
@@ -46,8 +46,6 @@ function CadastroColunaForm({ boardId, token, formularioState, onColunaCriada })
       }else{
         setErroCadastro("Erro ao cadastrar coluna");
       }
-
-      
 
     } finally {
       setEnviando(false);

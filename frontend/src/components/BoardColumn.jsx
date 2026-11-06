@@ -1,10 +1,10 @@
 import { useState } from "react";
 import CadastroTarefaForm from "./CadastroTarefaForm.jsx";
+import TaskCard from "./TaskCard.jsx";
 
 function BoardColumn({ columnId, columnName, tasks, token, onTarefaCriada }) {
 
     const [ mostrarFormularioTarefa, setMostrarFormularioTarefa ] = useState(false);
-
     return (
     <>
     <div className={`column`}>
@@ -12,9 +12,14 @@ function BoardColumn({ columnId, columnName, tasks, token, onTarefaCriada }) {
     
         <div className="tasks">
             {tasks.map((task) => (
-              <div key={task.taskId} className="task">
-                <p>{task.title}</p>
-              </div>
+              <TaskCard 
+                key={task.taskId}
+                columnId={columnId}
+                task={task}
+                token={token}
+                onTarefaCriada={onTarefaCriada}              
+              />
+
             ))}
         </div>
         <button type="button" onClick={ () => setMostrarFormularioTarefa(true) }>Add task</button>
