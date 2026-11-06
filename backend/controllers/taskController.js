@@ -185,7 +185,8 @@ export async function editTask(req, res) {
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const [day, month, year] = dueDate.split("/");
+    const [year, month, day] = dueDate.split("-");
+    console.log(year, month, day)
     const dueDateObject = new Date(
       Number(year),
       Number(month) - 1,
