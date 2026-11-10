@@ -166,6 +166,10 @@ export async function editTask(req, res) {
     tasksToUpdate.description = description.trim();
   }
 
+  if(description === undefined){
+    tasksToUpdate.description = null;
+  }
+
   if (priority !== undefined) {
     if (!validationPriority.includes(priority)) {
       return res.status(400).json({
@@ -186,7 +190,6 @@ export async function editTask(req, res) {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const [year, month, day] = dueDate.split("-");
-    console.log(year, month, day)
     const dueDateObject = new Date(
       Number(year),
       Number(month) - 1,
@@ -202,6 +205,10 @@ export async function editTask(req, res) {
     tasksToUpdate.dueDate = dueDateObject.toISOString();
   }
 
+  if(dueDate === undefined){
+    tasksToUpdate.dueDate = null
+  }
+
   if (responsibleId !== undefined) {
     if (!responsibleId || responsibleId.trim() === "") {
       return res.status(400).json({
@@ -211,11 +218,13 @@ export async function editTask(req, res) {
     tasksToUpdate.responsibleId = responsibleId.trim();
   }
 
+
   if (Object.keys(tasksToUpdate).length === 0) {
     return res.status(400).json({
       error: "Nenum campo vído foi enviado para atualização",
     });
   }
+
 
   try {
     const updatedTask = await updateTask(taskId, userId, tasksToUpdate);
@@ -242,6 +251,8 @@ export async function editTask(req, res) {
         error: "Usuário responsável não faz parte desse board",
       });
     }
+
+    console.log(error)
 
     return res.status(500).json({
       error: "Falha ao alterar informações",

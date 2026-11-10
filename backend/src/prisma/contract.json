@@ -339,14 +339,14 @@
                 }
               },
               "description": {
-                "nullable": false,
+                "nullable": true,
                 "type": {
                   "codecId": "pg/text@1",
                   "kind": "scalar"
                 }
               },
               "dueDate": {
-                "nullable": false,
+                "nullable": true,
                 "type": {
                   "codecId": "pg/timestamptz-string@1",
                   "kind": "scalar"
@@ -815,12 +815,12 @@
                 "description": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
-                  "nullable": false
+                  "nullable": true
                 },
                 "dueDate": {
                   "codecId": "pg/timestamptz-string@1",
                   "nativeType": "timestamptz",
-                  "nullable": false
+                  "nullable": true
                 },
                 "position": {
                   "codecId": "pg/int4@1",
@@ -984,7 +984,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "e39f1542d3d46af17349386f5201e649b5ad5a8923a4440e2f44e23b69bf4101"
+    "storageHash": "f60e9602cf9389ca7ce980a934df3ca9414a13a698968875f5224caff769b0ce"
   },
   "execution": {
     "executionHash": "518bf9da78d8e8b946785a6e7dcee301535cbefe7ba2eb19aa43592ebb79abe9",

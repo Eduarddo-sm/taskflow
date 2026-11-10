@@ -33,7 +33,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'e39f1542d3d46af17349386f5201e649b5ad5a8923a4440e2f44e23b69bf4101'>;
+  StorageHashBase<'f60e9602cf9389ca7ce980a934df3ca9414a13a698968875f5224caff769b0ce'>;
 export type ExecutionHash =
   ExecutionHashBase<'518bf9da78d8e8b946785a6e7dcee301535cbefe7ba2eb19aa43592ebb79abe9'>;
 export type ProfileHash =
@@ -263,9 +263,9 @@ export type FieldOutputTypes = {
       readonly columnId: CodecTypes['pg/text@1']['output'];
       readonly title: CodecTypes['pg/text@1']['output'];
       readonly responsibleId: CodecTypes['pg/text@1']['output'];
-      readonly description: CodecTypes['pg/text@1']['output'];
+      readonly description: CodecTypes['pg/text@1']['output'] | null;
       readonly priority: 'LOW' | 'MEDIUM' | 'HIGH';
-      readonly dueDate: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly dueDate: CodecTypes['pg/timestamptz-string@1']['output'] | null;
       readonly position: CodecTypes['pg/int4@1']['output'];
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
@@ -302,9 +302,9 @@ export type FieldInputTypes = {
       readonly columnId: CodecTypes['pg/text@1']['input'];
       readonly title: CodecTypes['pg/text@1']['input'];
       readonly responsibleId: CodecTypes['pg/text@1']['input'];
-      readonly description: CodecTypes['pg/text@1']['input'];
+      readonly description: CodecTypes['pg/text@1']['input'] | null;
       readonly priority: 'LOW' | 'MEDIUM' | 'HIGH';
-      readonly dueDate: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly dueDate: CodecTypes['pg/timestamptz-string@1']['input'] | null;
       readonly position: CodecTypes['pg/int4@1']['input'];
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
@@ -339,8 +339,8 @@ export type StorageColumnTypes = {
     readonly task: {
       readonly columnId: CodecTypes['pg/text@1']['output'];
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
-      readonly description: CodecTypes['pg/text@1']['output'];
-      readonly dueDate: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly description: CodecTypes['pg/text@1']['output'] | null;
+      readonly dueDate: CodecTypes['pg/timestamptz-string@1']['output'] | null;
       readonly position: CodecTypes['pg/int4@1']['output'];
       readonly priority: 'LOW' | 'MEDIUM' | 'HIGH';
       readonly responsibleId: CodecTypes['pg/text@1']['output'];
@@ -378,8 +378,8 @@ export type StorageColumnInputTypes = {
     readonly task: {
       readonly columnId: CodecTypes['pg/text@1']['input'];
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
-      readonly description: CodecTypes['pg/text@1']['input'];
-      readonly dueDate: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly description: CodecTypes['pg/text@1']['input'] | null;
+      readonly dueDate: CodecTypes['pg/timestamptz-string@1']['input'] | null;
       readonly position: CodecTypes['pg/int4@1']['input'];
       readonly priority: 'LOW' | 'MEDIUM' | 'HIGH';
       readonly responsibleId: CodecTypes['pg/text@1']['input'];
@@ -595,7 +595,7 @@ type ContractBase = Omit<
                 readonly description: {
                   readonly nativeType: 'text';
                   readonly codecId: 'pg/text@1';
-                  readonly nullable: false;
+                  readonly nullable: true;
                 };
                 readonly priority: {
                   readonly nativeType: 'text';
@@ -609,7 +609,7 @@ type ContractBase = Omit<
                 readonly dueDate: {
                   readonly nativeType: 'timestamptz';
                   readonly codecId: 'pg/timestamptz-string@1';
-                  readonly nullable: false;
+                  readonly nullable: true;
                 };
                 readonly position: {
                   readonly nativeType: 'int4';
@@ -911,7 +911,7 @@ type ContractBase = Omit<
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
               readonly description: {
-                readonly nullable: false;
+                readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
               readonly priority: {
@@ -919,7 +919,7 @@ type ContractBase = Omit<
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
               readonly dueDate: {
-                readonly nullable: false;
+                readonly nullable: true;
                 readonly type: {
                   readonly kind: 'scalar';
                   readonly codecId: 'pg/timestamptz-string@1';
