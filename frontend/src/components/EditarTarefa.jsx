@@ -1,19 +1,24 @@
 import { useState } from "react";
 import "./editarTarefa.css";
 
-function EditarTarefa({columnId, task, token, onTarefaCriada, onCancelar}) {
-  const [title, setTitle] = useState(task.title);
-  const [description, setDescription] = useState(task.description);
+function EditarTarefa({task, token, onTarefaCriada, onCancelar}) {
+  const [title, setTitle] = useState(task.title ?? "");
+  const [description, setDescription] = useState(task.description ?? "");
   const [priority, setPriority] = useState(task.priority);
-  const [dueDate, setDueDate] = useState(task.dueDate);
+  const [dueDate, setDueDate] = useState(task.dueDate ? task.dueDate.slice(0, 10): "");
+  const [erroEditar, setErroEditar] = useState("");
+  const [enviando, setEnviando] = useState(false);
 
 
   async function handleSubmit(event) {
     event.preventDefault();
+    setErroEditar("");
+    let tarefaAtualizada = false;
+    setEnviando(true)
 
     try {
 
-      const response = await fetch(`http://localhost:3000/api/tasks/${columnId}/`, {
+      const response = await fetch(`http://localhost:3000/api/tasks/${task.taskId}/`, {
         method: "PATCH",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -21,20 +26,37 @@ function EditarTarefa({columnId, task, token, onTarefaCriada, onCancelar}) {
         },
         body: JSON.stringify({
           "title": title || undefined,
-          "description": description || undefined,
+          "description": description.trim() === "" ? null : description,
           "priority": priority || undefined,
-          "dueDate:": dueDate || undefined,
+          "dueDate": dueDate.trim() === "" ? null : dueDate.trim(),
         })
       })
 
-      if(!response.ok){
+    if(!response.ok){
         throw new Error("Erro ao atualizar dados");
+      }
+
+    tarefaAtualizada = true;
+
+    const atualizado = await onTarefaCriada()
+
+    if(!atualizado){
+      throw new Error("Tarefa editada, mas não foi possível atualizar a lista");
+    }
+
+    onCancelar();
+
+    }catch(error){
+      if(tarefaAtualizada){
+        setErroEditar("Tarefa atualizada mas não foi possível atualizar as colunas");
+      }else{
+        setErroEditar("Não foi possivel atualizar a tarefa.");
       }
 
       
 
-    }catch(error){
-      console.log(error)
+    } finally {
+      setEnviando(false);
     }
   }
 
@@ -71,7 +93,7 @@ function EditarTarefa({columnId, task, token, onTarefaCriada, onCancelar}) {
             <option value="HIGH">Alto</option>
           </select>
 
-          <label htmlFor="deDate">Prazo</label>
+          <label htmlFor="dueDate">Prazo</label>
           <input 
             type="date" 
             id="dueDate" 
@@ -79,9 +101,10 @@ function EditarTarefa({columnId, task, token, onTarefaCriada, onCancelar}) {
             onChange={(event) => setDueDate(event.target.value)}
           />
 
-          <button type="submit">Atualizar</button>
+          <button type="submit" disabled={enviando}>{enviando ? "atualizando...":"atualzar"}</button>
           <button type="button" onClick={onCancelar}>Cancelar</button>
         </form>
+        {erroEditar && <p>{erroEditar}</p>}
       </div>
     </>
   );

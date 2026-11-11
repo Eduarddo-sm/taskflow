@@ -77,6 +77,7 @@ function BoardPage({ boardId, token, onVoltar }) {
                   tasks={item.tasks}
                   token={token}
                   onTarefaCriada={() => getColumns(false)}
+                  colunasDisponiveis={columns}
                 />
               ))
             )}
