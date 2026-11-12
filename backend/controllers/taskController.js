@@ -49,10 +49,10 @@ export async function createTask(req, res) {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    console.log(dueDate.includes("-"))
+    console.log(dueDate.includes("-"));
 
     //const [day, month, year] = dueDate.split("/");
-   //const [day, month, year] = dueDate.includes("-") ? dueDate.split("-") : dueDate.split("/")
+    //const [day, month, year] = dueDate.includes("-") ? dueDate.split("-") : dueDate.split("/")
     const [year, month, day] = dueDate.split("-");
     const dueDateObject = new Date(
       Number(year),
@@ -67,8 +67,7 @@ export async function createTask(req, res) {
     }
 
     taskToCreate.dueDate = dueDateObject.toISOString();
-
-    }
+  }
 
   if (responsibleId !== undefined) {
     if (!responsibleId || responsibleId.trim() === "") {
@@ -84,7 +83,7 @@ export async function createTask(req, res) {
     taskToCreate.responsibleId = userId;
   }
 
-    taskToCreate.columnId = columnId;
+  taskToCreate.columnId = columnId;
 
   if (Object.keys(taskToCreate).length === 0) {
     throw new Error("INVALIDO SOLICITAÇÃO");
@@ -131,7 +130,7 @@ export async function createTask(req, res) {
       });
     }
 
-    console.log(error)
+    console.log(error);
 
     return res.status(500).json({
       error: "Erro ao cadastrar tarefa",
@@ -157,17 +156,17 @@ export async function editTask(req, res) {
   }
 
   if (description !== undefined) {
-    if (!description || description.trim() === "") {
+    if (!description) {
       return res.status(400).json({
         error: "Descrição inválida",
       });
     }
 
-    tasksToUpdate.description = description.trim();
-  }
-
-  if(description === undefined){
-    tasksToUpdate.description = null;
+    if (description.trim() === "") {
+      tasksToUpdate.description = null;
+    } else {
+      tasksToUpdate.description = description.trim();
+    }
   }
 
   if (priority !== undefined) {
@@ -181,32 +180,36 @@ export async function editTask(req, res) {
   }
 
   if (dueDate !== undefined) {
-    if (!dueDate || dueDate.trim() === "") {
-      return res.status(400).json({
-        error: "Data inválida",
-      });
+    if (dueDate === null) {
+      tasksToUpdate.dueDate = dueDate;
+    } else {
+      if (!dueDate) {
+        return res.status(400).json({
+          error: "Data inválida",
+        });
+      }
+
+      if (dueDate.trim() === "") {
+        tasksToUpdate.dueDate === null;
+      } else {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const [year, month, day] = dueDate.split("-");
+        const dueDateObject = new Date(
+          Number(year),
+          Number(month) - 1,
+          Number(day),
+        );
+
+        if (Number.isNaN(dueDateObject.getDate()) || dueDateObject < today) {
+          return res.status(400).json({
+            error: "Data inserida invalida",
+          });
+        }
+
+        tasksToUpdate.dueDate = dueDateObject.toISOString();
+      }
     }
-
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const [year, month, day] = dueDate.split("-");
-    const dueDateObject = new Date(
-      Number(year),
-      Number(month) - 1,
-      Number(day),
-    );
-
-    if (Number.isNaN(dueDateObject.getDate()) || dueDateObject < today) {
-      return res.status(400).json({
-        error: "Data inserida invalida",
-      });
-    }
-
-    tasksToUpdate.dueDate = dueDateObject.toISOString();
-  }
-
-  if(dueDate === undefined){
-    tasksToUpdate.dueDate = null
   }
 
   if (responsibleId !== undefined) {
@@ -218,13 +221,11 @@ export async function editTask(req, res) {
     tasksToUpdate.responsibleId = responsibleId.trim();
   }
 
-
   if (Object.keys(tasksToUpdate).length === 0) {
     return res.status(400).json({
       error: "Nenum campo vído foi enviado para atualização",
     });
   }
-
 
   try {
     const updatedTask = await updateTask(taskId, userId, tasksToUpdate);
@@ -252,7 +253,7 @@ export async function editTask(req, res) {
       });
     }
 
-    console.log(error)
+    console.log(error);
 
     return res.status(500).json({
       error: "Falha ao alterar informações",

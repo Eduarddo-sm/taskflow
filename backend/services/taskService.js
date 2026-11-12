@@ -152,6 +152,7 @@ export async function reorderTasksInColumn(columnId) {
   return tasks;
 }
 
+//Fazer tratamento da coluna position para ser unique
 export async function moveTaskById(taskId, userId, columnId, position) {
   return await db.transaction(async (tx) => {
     const task = await tx.orm.public.Task.where({ taskId }).first();
@@ -225,8 +226,6 @@ export async function moveTaskById(taskId, userId, columnId, position) {
         await tx.orm.public.Task.where({ taskId: allTasks[i].taskId }).update({
           position: i + 1,
         });
-
-        console.log(`${allTasks[i].title}, ${allTasks[i].position}`);
       }
 
       movedTask.position = position;
@@ -280,9 +279,6 @@ export async function moveTaskById(taskId, userId, columnId, position) {
           taskId: newColumnTasks[i].taskId,
         }).update({ position: i + 1 });
 
-        console.log(
-          `${newColumnTasks[i].title}, ${newColumnTasks[i].position}`,
-        );
       }
 
       taskToMove.columnId = destinationColumn.columnId;
