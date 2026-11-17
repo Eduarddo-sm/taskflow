@@ -1,24 +1,25 @@
 .card {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    transition: all 0.1s ease-in-out ;
-
+  width: 100%;
+  display: flex;
+  align-items: center;
+  transition: all 0.1s ease-in-out;
 }
 
-.card:hover{
-        background-color: aqua;
-    }
+
+.card.arrastando {
+  opacity: 0.5;
+}
+
 
 .description {
-    width: 100%;
-    display: flex;
+  width: 100%;
+  display: flex;
 }
 
 .description p:nth-last-child(1) {
-    font-size: 8px;
+  font-size: 8px;
 }
 
 .icon {
-    display: flex;
+  display: flex;
 }

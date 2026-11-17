@@ -1,0 +1,20 @@
+
+.column {
+    min-width: 200px;
+    background-color: #000080;
+    border: 10px solid green;
+    border-radius: 3px;
+}
+
+.column>p {
+    text-align: center;
+    background-color: yellow;
+    color: rgb(0, 0, 0);
+    margin: 0;
+
+}
+
+
+.column.destacado {
+    border: 10px solid rgb(255, 255, 255);
+}

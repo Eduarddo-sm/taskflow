@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import CadastroTarefaForm from "./CadastroTarefaForm.jsx";
 import TaskCard from "./TaskCard.jsx";
+import "./boardColumn.css";
 
 function BoardColumn({
   columnId,
@@ -9,61 +10,76 @@ function BoardColumn({
   token,
   onTarefaCriada,
   colunasDisponiveis,
+  onMoverTarefa,
 }) {
   const [exibirErro, setExibirErro] = useState("");
+  const [colunaDestacada, setColunaDestacada] = useState(false);
+  const contadorDrag = useRef(0);
 
   function handleDragOver(event) {
     event.preventDefault();
+    setColunaDestacada(true);
   }
 
   async function handleDrop(event) {
     event.preventDefault();
     setExibirErro("");
-    let tarefaMovida = false;
-
-    const dados = JSON.parse(event.dataTransfer.getData("text/plain"));
-    const taskId = dados.taskId;
 
     try {
-      const response = await fetch(
-        `http://localhost:3000/api/tasks/${taskId}/move`,
-        {
-          method: "PATCH",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "content-type": "application/json",
-          },
-          body: JSON.stringify({
-            columnId: columnId,
-            position: 1,
-          }),
-        },
-      );
+      const dados = JSON.parse(event.dataTransfer.getData("text/plain"));
+      const taskId = dados.taskId;
+      
+      const resultado = await onMoverTarefa(taskId, columnId, 1); 
 
-      if (!response.ok) {
+      if (!resultado.movida) {
         throw new Error("Falha ao mover tarefa");
       }
 
-      tarefaMovida = true;
-
-      const atualizado = await onTarefaCriada();
-
-      if (!atualizado) {
+      if (!resultado.atualizada) {
         throw new Error("Tarefa movida, falha ao atualizar colunas");
       }
+
+
     } catch (error) {
-      if (tarefaMovida) {
-        setExibirErro("Tarefa movida, falha ao atualizar colunas");
-      } else {
-        setExibirErro("Falha ao mover tarefa");
-      }
+      setExibirErro(error.message);
     }
+  }
+
+  function handleDragLeave(event) {
+    event.preventDefault();
+
+
+    contadorDrag.current = Math.max(0, contadorDrag.current -1);
+    if(contadorDrag.current === 0){
+      setColunaDestacada(false);
+    }
+  }
+
+  function handleDropCapture(){
+
+    contadorDrag.current = 0;
+    setColunaDestacada(false)
+
+  }
+
+  function handleDragEnter(event){
+    event.preventDefault();
+
+    contadorDrag.current += 1;
+    setColunaDestacada(true);
   }
 
   const [mostrarFormularioTarefa, setMostrarFormularioTarefa] = useState(false);
   return (
     <>
-      <div className={`column`} onDragOver={handleDragOver} onDrop={handleDrop}>
+      <div
+        className={`column ${colunaDestacada ? "destacado" : ""}`}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDropCapture={handleDropCapture}
+        onDragEnter={handleDragEnter}
+        onDrop={handleDrop}
+      >
         <p>{columnName}</p>
 
         <div className="tasks">
@@ -75,6 +91,7 @@ function BoardColumn({
               token={token}
               onTarefaCriada={onTarefaCriada}
               colunasDisponiveis={colunasDisponiveis}
+              onMoverTarefa={onMoverTarefa}
             />
           ))}
         </div>
@@ -91,7 +108,7 @@ function BoardColumn({
           onCancelar={() => setMostrarFormularioTarefa(false)}
         />
       )}
-            {exibirErro && <p>{exibirErro}</p>}
+      {exibirErro && <p>{exibirErro}</p>}
     </>
   );
 }

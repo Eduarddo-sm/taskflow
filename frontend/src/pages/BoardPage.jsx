@@ -16,7 +16,6 @@ function BoardPage({ boardId, token, onVoltar }) {
     setErroAtualizacao("");
 
     try {
-
       const response = await fetch(
         `http://localhost:3000/api/boards/${boardId}/`,
         {
@@ -45,6 +44,47 @@ function BoardPage({ boardId, token, onVoltar }) {
     } finally {
       setLoading(false);
     }
+  }
+
+  async function moverTarefa(taskId, columnId, position) {
+    let movida = false;
+
+    try {
+      const response = await fetch(
+        `http://localhost:3000/api/tasks/${taskId}/move`,
+        {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "content-type": "application/json",
+          },
+          body: JSON.stringify({
+            columnId,
+            position,
+          }),
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error("Falha ao mover tarefa");
+      }
+
+      movida = true;
+      const atualizada = await getColumns(false);
+
+      return {
+        movida,
+        atualizada,
+      };
+    } catch (error) {
+      console.log(error.error);
+
+      return {
+        movida,
+        atualizada: false,
+      }
+
+    } 
   }
 
   useEffect(() => {
@@ -78,6 +118,7 @@ function BoardPage({ boardId, token, onVoltar }) {
                   token={token}
                   onTarefaCriada={() => getColumns(false)}
                   colunasDisponiveis={columns}
+                  onMoverTarefa={moverTarefa}
                 />
               ))
             )}

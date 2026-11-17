@@ -13,10 +13,11 @@ function resolveDate(date) {
   return newDate;
 }
 
-function TaskCard({columnId, task, token, onTarefaCriada, colunasDisponiveis}) {
+function TaskCard({columnId, task, token, onTarefaCriada, onMoverTarefa}) {
 
   const [mostrarEditarTarefas, setMostrarEditarTarefas] = useState(false);
   const [mostrarDeletarTarefa, setMostrarDeletarTarefa] = useState(false);
+  const [arrastando, setArrastando] = useState(false);
   const [exibirErro, setExibirErro] = useState("");
 
   function handleDragStart(event) {
@@ -25,6 +26,8 @@ function TaskCard({columnId, task, token, onTarefaCriada, colunasDisponiveis}) {
       position: task.position,
       columnId: task.columnId,
     };
+
+    setArrastando(true);
 
     event.dataTransfer.setData("text/plain", JSON.stringify(dataTask));
   }
@@ -36,14 +39,13 @@ function TaskCard({columnId, task, token, onTarefaCriada, colunasDisponiveis}) {
   async function handleDropSobreCard(event) {
     event.preventDefault();
     event.stopPropagation();
-    let tarefaMovida = false;
     setExibirErro("");
 
     const dados = event.dataTransfer.getData("text/plain");
 
     const taskArrastada = JSON.parse(dados);
     const taskIdDestino = task.taskId;
-    //Acho que não será mais necessário
+    //Acho que não será mais necessário, recalculo feito na propria API
     const posicaoOriginal = taskArrastada.position;
     const posicaoReferencia = task.position;
 
@@ -61,56 +63,36 @@ function TaskCard({columnId, task, token, onTarefaCriada, colunasDisponiveis}) {
     if (!mesmaColuna) {
       novaPosicao = posicaoReferencia;
     }
-
-    console.log("Nova posição:", novaPosicao);
-
+    
     try {
-      const response = await fetch(
-        `http://localhost:3000/api/tasks/${taskArrastada.taskId}/move`,
-        {
-          method: "PATCH",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "content-type": "application/json",
-          },
-          body: JSON.stringify({
-            columnId: columnId,
-            position: novaPosicao,
-          }),
-        },
-      );
+      const resultado = await onMoverTarefa(taskArrastada.taskId, columnId, novaPosicao);
 
-      if (!response.ok) {
-        throw new Error("Falha ao mudar a tarefa");
+      if (!resultado.movida) {
+        throw new Error("Falha ao mover as tarefas");
       }
 
-      tarefaMovida = true;
-
-      const atualizado = await onTarefaCriada();
-
-      if (!atualizado) {
-        throw new Error("Falha ao atualizar colunas");
+      if (!resultado.atualizada) {
+        throw new Error("Falha ao atualizar dados");
       }
     } catch (error) {
-      if (tarefaMovida) {
-        setExibirErro(
-          "Tarefas atualizas, mas não foi possivel atualizar colunas",
-        );
-      } else {
-        setExibirErro("Não foi possível atualizar tarefas");
-      }
+        setExibirErro(error.message)
     }
+  }
+
+  function handleDragEnd(){
+    setArrastando(false);
   }
 
   const newDate = resolveDate(task.dueDate);
   return (
     <>
       <div
-        className="card"
+        className={`card ${arrastando ? "arrastando": ""}`}
         draggable={true}
         onDragStart={handleDragStart}
         onDragOver={onDragOver}
         onDrop={handleDropSobreCard}
+        onDragEnd={handleDragEnd}
       >
         <div className="description">
           <p>{task.title}</p>
