@@ -1,5 +1,6 @@
 import { useState } from "react";
 import "./editarTarefa.css";
+import {editarTarefaApi} from "../services/taskService.js"
 
 function EditarTarefa({ task, token, onTarefaCriada, onCancelar }) {
   const [title, setTitle] = useState(task.title ?? "");
@@ -15,29 +16,19 @@ function EditarTarefa({ task, token, onTarefaCriada, onCancelar }) {
     event.preventDefault();
     setErroEditar("");
     let tarefaAtualizada = false;
+
+    const dadosAtualizacao = {
+      title: title.trim(),
+      description: description.trim() === "" ? null : description.trim(),
+      priority: priority,
+      dueDate: dueDate === "" ? null : dueDate,
+    }
+
     setEnviando(true);
 
     try {
-      const response = await fetch(
-        `http://localhost:3000/api/tasks/${task.taskId}/`,
-        {
-          method: "PATCH",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "content-type": "application/json",
-          },
-          body: JSON.stringify({
-            title: title || undefined,
-            description: description.trim() === "" ? null : description,
-            priority: priority || undefined,
-            dueDate: dueDate.trim() === "" ? null : dueDate.trim(),
-          }),
-        },
-      );
 
-      if (!response.ok) {
-        throw new Error("Erro ao atualizar dados");
-      }
+      const response = await editarTarefaApi(task.taskId, dadosAtualizacao, token);
 
       tarefaAtualizada = true;
 

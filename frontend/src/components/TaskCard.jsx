@@ -2,6 +2,7 @@ import { useState } from "react";
 import "./taskCard.css";
 import EditarTarefa from "./EditarTarefa.jsx";
 import DeletarTarefa from "./DeletarTarefa.jsx";
+import { calcularNovaPosicao } from "../utils/calcularNovaPosicao.js";
 
 function resolveDate(date) {
   if (date === null) {
@@ -13,12 +14,12 @@ function resolveDate(date) {
   return newDate;
 }
 
-function TaskCard({columnId, task, token, onTarefaCriada, onMoverTarefa}) {
-
+function TaskCard({ columnId, task, token, onTarefaCriada, onMoverTarefa }) {
   const [mostrarEditarTarefas, setMostrarEditarTarefas] = useState(false);
   const [mostrarDeletarTarefa, setMostrarDeletarTarefa] = useState(false);
   const [arrastando, setArrastando] = useState(false);
   const [exibirErro, setExibirErro] = useState("");
+  const [mostrarBurger, setMostrarBurger] = useState(false);
 
   function handleDragStart(event) {
     const dataTask = {
@@ -56,16 +57,14 @@ function TaskCard({columnId, task, token, onTarefaCriada, onMoverTarefa}) {
       return;
     }
 
-    if (mesmaColuna) {
-        novaPosicao = posicaoReferencia;
-    }
+    novaPosicao = calcularNovaPosicao(posicaoOriginal, posicaoReferencia, mesmaColuna)
 
-    if (!mesmaColuna) {
-      novaPosicao = posicaoReferencia;
-    }
-    
     try {
-      const resultado = await onMoverTarefa(taskArrastada.taskId, columnId, novaPosicao);
+      const resultado = await onMoverTarefa(
+        taskArrastada.taskId,
+        columnId,
+        novaPosicao,
+      );
 
       if (!resultado.movida) {
         throw new Error("Falha ao mover as tarefas");
@@ -75,11 +74,11 @@ function TaskCard({columnId, task, token, onTarefaCriada, onMoverTarefa}) {
         throw new Error("Falha ao atualizar dados");
       }
     } catch (error) {
-        setExibirErro(error.message)
+      setExibirErro(error.message);
     }
   }
 
-  function handleDragEnd(){
+  function handleDragEnd() {
     setArrastando(false);
   }
 
@@ -87,7 +86,7 @@ function TaskCard({columnId, task, token, onTarefaCriada, onMoverTarefa}) {
   return (
     <>
       <div
-        className={`card ${arrastando ? "arrastando": ""}`}
+        className={`card ${arrastando ? "arrastando" : ""}`}
         draggable={true}
         onDragStart={handleDragStart}
         onDragOver={onDragOver}
@@ -98,11 +97,29 @@ function TaskCard({columnId, task, token, onTarefaCriada, onMoverTarefa}) {
           <p>{task.title}</p>
           <p>{newDate}</p>
         </div>
-        <div className="editar" onClick={() => setMostrarEditarTarefas(true)}>
-          Editar
-        </div>
-        <div className="deletar" onClick={() => setMostrarDeletarTarefa(true)}>
-          Deletar
+
+        <div
+          onClick={() => {
+            mostrarBurger ? setMostrarBurger(false) : setMostrarBurger(true);
+          }}
+        >
+          ...
+          {mostrarBurger && (
+            <div className="burger">
+              <div
+                className="editar"
+                onClick={() => setMostrarEditarTarefas(true)}
+              >
+                Editar
+              </div>
+              <div
+                className="deletar"
+                onClick={() => setMostrarDeletarTarefa(true)}
+              >
+                Deletar
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -124,6 +141,7 @@ function TaskCard({columnId, task, token, onTarefaCriada, onMoverTarefa}) {
           onCancelar={() => setMostrarDeletarTarefa(false)}
         />
       )}
+
       {exibirErro && <p>{exibirErro}</p>}
     </>
   );

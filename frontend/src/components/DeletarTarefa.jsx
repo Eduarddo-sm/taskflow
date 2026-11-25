@@ -1,5 +1,6 @@
 import { useState } from "react";
-import "./deletarTarefa.css"
+import "./deletarTarefa.css";
+import { deletarTarefaApi } from "../services/taskService";
 
 function DeletarTarefa({task, token, onTarefaDeletada, onCancelar}){
     const [exibirErro, setExibirErro] = useState("");
@@ -13,27 +14,22 @@ function DeletarTarefa({task, token, onTarefaDeletada, onCancelar}){
         let tarefaRemovida = false;
 
         try{
-            const response = await fetch(`http://localhost:3000/api/tasks/${task.taskId}`, {
-            method: "DELETE",
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        });
-
-        if (!response.ok){
-            throw new Error("Falha ao deletar")
-        }
+            
+            console.log(task.taskId);
+        const response = await deletarTarefaApi(task.taskId, token);
 
         tarefaRemovida = true;
         const atualizada = await onTarefaDeletada()
 
         if(!atualizada){
-            throw new Error("Tarefa removida, mas falha ao atualizar.")
+            throw new Error("Tarefa removida, mas falha ao atualizar.");
         }
 
-        onCancelar()
+        onCancelar();
 
         }catch(error){
+            console.log(error);
+
             if(tarefaRemovida){
                 setExibirErro("Tarefa removida mas não foi possivel atualizar as tarefas");
             }else{

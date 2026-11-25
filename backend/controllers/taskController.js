@@ -22,13 +22,18 @@ export async function createTask(req, res) {
   taskToCreate.title = title.trim();
 
   if (description !== undefined) {
-    if (!description || description.trim() === "") {
-      return res.status(400).json({
-        error: "Descrição inserida inválido",
-      });
-    }
+    if (description === null) {
+      taskToCreate.description = description;
+    } else {
+      if (!description || description.trim() === "") {
+        console.log("Erro na descrição");
+        return res.status(400).json({
+          error: "Descrição inserida inválido",
+        });
+      }
 
-    taskToCreate.description = description.trim();
+      taskToCreate.description = description.trim();
+    }
   }
 
   if (!validPriorities.includes(priority)) {
@@ -40,33 +45,35 @@ export async function createTask(req, res) {
   taskToCreate.priority = priority.trim();
 
   if (dueDate !== undefined) {
-    if (!dueDate || dueDate.trim() === "") {
-      return res.statuts(400).json({
-        error: "Data inserida inválida",
-      });
+    if (dueDate === null) {
+      taskToCreate.dueDate = dueDate;
+    } else {
+      if (!dueDate || dueDate.trim() === "") {
+        return res.statuts(400).json({
+          error: "Data inserida inválida",
+        });
+      }
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      //const [day, month, year] = dueDate.split("/");
+      //const [day, month, year] = dueDate.includes("-") ? dueDate.split("-") : dueDate.split("/")
+      const [year, month, day] = dueDate.split("-");
+      const dueDateObject = new Date(
+        Number(year),
+        Number(month) - 1,
+        Number(day),
+      );
+
+      if (Number.isNaN(dueDateObject.getTime()) || dueDateObject < today) {
+        return res.status(400).json({
+          error: "Data prazo inválida",
+        });
+      }
+
+      taskToCreate.dueDate = dueDateObject.toISOString();
     }
-
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    console.log(dueDate.includes("-"));
-
-    //const [day, month, year] = dueDate.split("/");
-    //const [day, month, year] = dueDate.includes("-") ? dueDate.split("-") : dueDate.split("/")
-    const [year, month, day] = dueDate.split("-");
-    const dueDateObject = new Date(
-      Number(year),
-      Number(month) - 1,
-      Number(day),
-    );
-
-    if (Number.isNaN(dueDateObject.getTime()) || dueDateObject < today) {
-      return res.status(400).json({
-        error: "Data prazo inválida",
-      });
-    }
-
-    taskToCreate.dueDate = dueDateObject.toISOString();
   }
 
   if (responsibleId !== undefined) {
@@ -156,15 +163,14 @@ export async function editTask(req, res) {
   }
 
   if (description !== undefined) {
-    if (!description) {
-      return res.status(400).json({
-        error: "Descrição inválida",
-      });
-    }
-
-    if (description.trim() === "") {
+    if (description === null) {
       tasksToUpdate.description = null;
     } else {
+      if (!description) {
+        return res.status(400).json({
+          error: "Descrição inválida",
+        });
+      }
       tasksToUpdate.description = description.trim();
     }
   }

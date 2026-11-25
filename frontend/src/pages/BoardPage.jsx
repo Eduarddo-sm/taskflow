@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import CadastroColunaForm from "../components/CadastroColunaForm.jsx";
 import BoardColumn from "../components/BoardColumn.jsx";
 import "./BoardPage.css";
+import { moverTarefaApi } from "../services/taskService.js";
+import { boardService } from "../services/boardService.js";
 
 function BoardPage({ boardId, token, onVoltar }) {
   const [columns, setColumns] = useState([]);
@@ -16,22 +18,9 @@ function BoardPage({ boardId, token, onVoltar }) {
     setErroAtualizacao("");
 
     try {
-      const response = await fetch(
-        `http://localhost:3000/api/boards/${boardId}/`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
-      );
-
-      if (!response.ok) {
-        throw new Error("Falha ao buscar dados");
-      }
-
-      const dados = await response.json();
-      setColumns(dados.columns);
+      const response = await boardService(boardId, token);
+      setColumns(response.columns);
+      
       return true;
     } catch (error) {
       if (exibirLoading) {
@@ -50,41 +39,18 @@ function BoardPage({ boardId, token, onVoltar }) {
     let movida = false;
 
     try {
-      const response = await fetch(
-        `http://localhost:3000/api/tasks/${taskId}/move`,
-        {
-          method: "PATCH",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "content-type": "application/json",
-          },
-          body: JSON.stringify({
-            columnId,
-            position,
-          }),
-        },
-      );
-
-      if (!response.ok) {
-        throw new Error("Falha ao mover tarefa");
-      }
+      await moverTarefaApi(taskId, columnId, position, token);
 
       movida = true;
+
       const atualizada = await getColumns(false);
 
-      return {
-        movida,
-        atualizada,
-      };
+      return { movida, atualizada };
     } catch (error) {
-      console.log(error.error);
+      console.log(error.message);
 
-      return {
-        movida,
-        atualizada: false,
-      }
-
-    } 
+      return { movida, atualizada: false };
+    }
   }
 
   useEffect(() => {

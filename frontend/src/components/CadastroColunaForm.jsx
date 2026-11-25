@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { criarColuna } from "../services/columnService.js";
 
 
 function CadastroColunaForm({ boardId, token, formularioState, onColunaCriada }) {
@@ -13,21 +14,8 @@ function CadastroColunaForm({ boardId, token, formularioState, onColunaCriada })
     let colunaCriada = false;
 
     try {
-      const response = await fetch(
-        `http://localhost:3000/api/boards/${boardId}/columns`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "content-type": "application/json",
-          },
-          body: JSON.stringify({ columnName }),
-        },
-      );
-
-      if (!response.ok) {
-        throw new Error("Falha ao criar coluna");
-      }
+      
+      const response = await criarColuna(columnName, boardId, token);
 
       colunaCriada = true;
 
@@ -40,6 +28,7 @@ function CadastroColunaForm({ boardId, token, formularioState, onColunaCriada })
       formularioState(false);
 
     } catch (error) {
+      console.log(error)
 
       if(colunaCriada){
         setErroCadastro("Coluna criada, mas não foi possível atualizar a lista.");
