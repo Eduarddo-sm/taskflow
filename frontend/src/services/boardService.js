@@ -1,9 +1,9 @@
 export async function boardService(boardId, token) {
-  if (!boardId || boardId.trim() === "") {
+  if (typeof boardId !== "string" || boardId.trim() === "") {
     throw new Error("BoardId inválido");
   }
 
-  if (!token || token.trim() === "") {
+  if (typeof token !== "string" || token.trim() === "") {
     throw new Error("Token inválido");
   }
 
@@ -22,3 +22,5 @@ export async function boardService(boardId, token) {
 
   return dados;
 }
+
+
