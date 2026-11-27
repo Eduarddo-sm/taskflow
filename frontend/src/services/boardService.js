@@ -18,7 +18,7 @@ export async function boardService(boardId, token) {
     throw new Error("Falha ao buscar boards");
   }
 
-  const dados = response.json();
+  const dados =  response.json();
 
   return dados;
 }

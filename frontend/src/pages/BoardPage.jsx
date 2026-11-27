@@ -20,7 +20,7 @@ function BoardPage({ boardId, token, onVoltar }) {
     try {
       const response = await boardService(boardId, token);
       setColumns(response.columns);
-      
+      console.log(response)
       return true;
     } catch (error) {
       if (exibirLoading) {

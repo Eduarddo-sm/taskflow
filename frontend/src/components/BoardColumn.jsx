@@ -82,7 +82,7 @@ function BoardColumn({
       >
         <p>{columnName}</p>
 
-        <div className="tasks">
+      <div className="tasks">
           {tasks.map((task) => (
             <TaskCard
               key={task.taskId}
